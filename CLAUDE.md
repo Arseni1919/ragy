@@ -7,6 +7,16 @@
 - Example: `uv run python script.py` or `uv run python -m module`
 - This ensures the correct virtual environment and dependencies are used
 
+### Environment Variables
+- **All critical configuration variables must be defined in the `.env` file**
+- This includes:
+  - API keys (e.g., `TAVILY_API_KEY`)
+  - Model names (e.g., `HF_EMB_MODEL`, `OLLAMA_EMB_MODEL`)
+  - File paths (e.g., `DB_PATH`)
+  - Any configurable parameter that might change between environments
+- Load using `python-dotenv` with fallback defaults
+- Example: `MODEL = os.getenv("HF_EMB_MODEL", "default-model")`
+
 ### Code Conventions
 - Use best practices in writing code
 - Suggest better options if there is a strong recommendation for best practice pattern
@@ -35,7 +45,7 @@
 - [x] Create embeddings connection (Hugging Face sentence-transformers)
 - [x] Create connection to Tavily (search API)
 - [ ] Create connection to Bright Data
-- [ ] Build the ragy creator
+- [x] Build the ragy creator (365-day index builder with parallel processing)
 - [ ] Build the ragy extractor
 - [ ] Connect LLM clients
 - [ ] Create UI interface

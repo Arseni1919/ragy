@@ -9,4 +9,5 @@ wheels/
 # Virtual environments
 .venv
 chroma_data
+ragy_db
 .env

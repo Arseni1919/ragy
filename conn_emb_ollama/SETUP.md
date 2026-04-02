@@ -16,19 +16,29 @@ ollama serve
 ollama pull nomic-embed-text
 ```
 
+## Configuration
+
+The model name is configured in the `.env` file:
+```
+OLLAMA_EMB_MODEL="nomic-embed-text"
+```
+
+You can change this to use different Ollama embedding models.
+
 ## Why nomic-embed-text?
 
 - **Local**: Runs entirely on your machine, no API keys needed
 - **Efficient**: 137M parameters, fast inference
 - **Quality**: Good embedding quality for general-purpose use
 - **Dimension**: Produces 768-dimensional embeddings
+- **Context Window**: 8192 tokens (much larger than Hugging Face models)
 - **Compatible**: Works seamlessly with ChromaDB vector storage
 
 ## Testing
 
 After setup, test the connection:
 ```bash
-uv run python conn_emb/test_client.py
+uv run python conn_emb_ollama/test_client.py
 ```
 
 You should see:

@@ -1,6 +1,10 @@
+import os
+from dotenv import load_dotenv
 import ollama
 
-MODEL = "nomic-embed-text"
+load_dotenv()
+
+MODEL = os.getenv("OLLAMA_EMB_MODEL", "nomic-embed-text")
 
 def get_embedding(text: str) -> list[float]:
     try:

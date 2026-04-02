@@ -15,7 +15,7 @@ Unlike Ollama, sentence-transformers is a pure Python package that requires **no
 
 Just run the test - everything happens automatically:
 ```bash
-uv run python conn_emb/test_client.py
+uv run python conn_emb_hugging_face/test_client.py
 ```
 
 First run:
@@ -39,14 +39,14 @@ Subsequent runs:
 
 The model name is configured in the `.env` file:
 ```
-EMB_MODEL="all-MiniLM-L6-v2"
+HF_EMB_MODEL="all-MiniLM-L6-v2"
 ```
 
 You can change this to use different models (e.g., `all-mpnet-base-v2` for longer context).
 
 ## Technical Details
 
-- **Model**: `all-MiniLM-L6-v2` (configurable via `EMB_MODEL` in `.env`)
+- **Model**: `all-MiniLM-L6-v2` (configurable via `HF_EMB_MODEL` in `.env`)
 - **Embedding Size**: 384 dimensions
 - **Context Window**: 256 tokens (~190-200 words, ~1000-1200 characters)
   - ⚠️ **Important**: Text longer than 256 tokens will be automatically truncated
