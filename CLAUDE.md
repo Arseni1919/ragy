@@ -20,7 +20,7 @@
 ## Project Structure
 
 - `conn_db/` - Vector database connection (ChromaDB)
-- `conn_emb/` - Embedding model connection (Hugging Face sentence-transformers)
+- `conn_emb_hugging_face/` - Embedding model connection (Hugging Face sentence-transformers)
 - `conn_emb_ollama/` - Alternative embedding (Ollama, requires installation)
 - `conn_tavily/` - Tavily search API client
 - `conn_bright_data/` - Bright Data API client

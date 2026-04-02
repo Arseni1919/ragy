@@ -3,7 +3,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import numpy as np
-from conn_emb.client import get_embedding
+from conn_emb_hugging_face.client import get_embedding
 
 print("="*60)
 print("TEST 1: Basic Embedding Generation")
