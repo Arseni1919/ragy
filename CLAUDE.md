@@ -4,8 +4,14 @@
 
 ### Running Python Scripts
 - **ALWAYS use `uv run` to execute Python scripts**, not plain `python`
-- Example: `uv run python script.py` or `uv run python -m module`
-- This ensures the correct virtual environment and dependencies are used
+- **Use module syntax from project root**: `uv run python -m module.script`
+- Examples:
+  - `uv run python -m conn_db.test_client` ✓ (not `uv run python conn_db/test_client.py` ✗)
+  - `uv run python -m ragy_creator.test_client` ✓
+  - `uv run python -m conn_llm.test_with_tools` ✓
+- This ensures proper package imports and virtual environment usage
+- All modules have `__init__.py` files for proper package structure
+- Always run from the project root directory
 
 ### Environment Variables
 - **All critical configuration variables must be defined in the `.env` file**
