@@ -7,6 +7,16 @@
 - Example: `uv run python script.py` or `uv run python -m module`
 - This ensures the correct virtual environment and dependencies are used
 
+### Code Conventions
+- Use best practices in writing code
+- Suggest better options if there is a strong recommendation for best practice pattern
+- No comments in code unless really necessary - code should be self-explanatory
+- Be as short as possible, use minimal code, be concise
+- Avoid unnecessary abstractions and wrapper functions
+- Simple and direct is better than complex and abstracted
+- Add print statements when testing or checking something to show progress and results
+- Use tqdm or similar tools for long iterative processes to show progress bars
+
 ## Project Structure
 
 - `conn_db/` - Vector database connection (ChromaDB)
