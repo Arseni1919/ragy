@@ -20,7 +20,9 @@
 ## Project Structure
 
 - `conn_db/` - Vector database connection (ChromaDB)
-- `conn_emb/` - Embedding model connection
+- `conn_emb/` - Embedding model connection (Hugging Face sentence-transformers)
+- `conn_emb_ollama/` - Alternative embedding (Ollama, requires installation)
+- `conn_tavily/` - Tavily search API client
 - `conn_bright_data/` - Bright Data API client
 - `ragy_creator/` - Indexing orchestrator (365-day construction)
 - `ragy_extractor/` - RAG retrieval logic (finding relevant days)
@@ -29,8 +31,9 @@
 
 ## Development Todo List
 
-- [ ] Create database connection (ChromaDB)
-- [ ] Create embeddings connection
+- [x] Create database connection (ChromaDB)
+- [x] Create embeddings connection (Hugging Face sentence-transformers)
+- [x] Create connection to Tavily (search API)
 - [ ] Create connection to Bright Data
 - [ ] Build the ragy creator
 - [ ] Build the ragy extractor
