@@ -1,24 +1,33 @@
-Screen {
-    align: center middle;
+#chat-history {
+    height: 1fr;
+    padding: 1 2;
 }
 
-Container {
+#input-container {
+    dock: bottom;
+    height: 3;
+    padding: 0 2;
+    margin-bottom: 1;
+}
+
+#chat-input {
     width: 100%;
-    height: 100%;
-    align: center middle;
 }
 
-#logo {
+.message {
+    margin: 1 0;
+}
+
+.message.logo {
     text-align: center;
     margin: 2 0;
 }
 
-#subtitle {
+.message.subtitle {
     text-align: center;
-    margin: 1 0;
+    margin: 1 0 3 0;
 }
 
-#help {
-    text-align: center;
+.message.user {
     margin: 1 0;
 }

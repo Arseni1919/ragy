@@ -5,7 +5,7 @@ Build a rich terminal UI (TUI) for interacting with the RAG database, with autom
 
 ## Implementation Steps
 
-### Step 1: Basic Greeting ✅ (CURRENT)
+### Step 1: Basic Greeting ✅
 **Status:** Completed
 **Files:** `app.py`, `__main__.py`
 **Features:**
@@ -20,19 +20,21 @@ uv run python -m ragy_ui
 
 ---
 
-### Step 2: Add Menu Buttons
-**Files:** `app.py` (update)
+### Step 2: Add Slash Commands ✅ (CURRENT)
+**Status:** Completed
+**Files:** `app.py` (update), `app.css` (update)
 **Features:**
-- Add 5 menu buttons:
-  1. Search Web
-  2. Extract Data
-  3. Create Index
-  4. Show DB Content
-  5. Show Embedding Info
-- Buttons do nothing yet (just placeholders)
-- Styled with colors
+- Add input field with slash command support
+- Add autocomplete suggestions when user types `/`
+- Available commands:
+  1. `/search` - Search Web
+  2. `/extract` - Extract Data
+  3. `/create` - Create Index
+  4. `/show-db` - Show DB Content
+  5. `/show-emb` - Show Embedding Info
+- Commands are placeholders (no functionality yet)
 
-**Test:** Click buttons, verify they appear but don't crash
+**Test:** Type `/` and see autocomplete suggestions appear
 
 ---
 
@@ -40,12 +42,12 @@ uv run python -m ragy_ui
 **Files:** `app.py` (update)
 **Features:**
 - Import ragy_manager functions
-- Connect button 1 → execute_web_search (with input prompt)
-- Connect button 4 → show_db_content (direct display)
-- Connect button 5 → show_emb_info (direct display)
+- Connect `/search` → execute_web_search (with input prompt)
+- Connect `/show-db` → show_db_content (direct display)
+- Connect `/show-emb` → show_emb_info (direct display)
 - Display output in scrollable panel
 
-**Test:** Test each connected button, verify output displays
+**Test:** Test each command, verify output displays
 
 ---
 
@@ -53,8 +55,8 @@ uv run python -m ragy_ui
 **Files:** `app.py` (update)
 **Features:**
 - Add progress bar widget
-- Connect button 2 → execute_data_extraction (with progress)
-- Connect button 3 → execute_index_creation (with progress)
+- Connect `/extract` → execute_data_extraction (with progress)
+- Connect `/create` → execute_index_creation (with progress)
 - Show real-time progress updates
 - Handle yield pattern from ragy_manager
 
