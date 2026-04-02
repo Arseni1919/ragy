@@ -46,6 +46,6 @@
 - [x] Create connection to Tavily (search API)
 - [ ] Create connection to Bright Data
 - [x] Build the ragy creator (365-day index builder with parallel processing)
-- [ ] Build the ragy extractor
+- [x] Build the ragy extractor (vector similarity retrieval)
 - [ ] Connect LLM clients
 - [ ] Create UI interface
