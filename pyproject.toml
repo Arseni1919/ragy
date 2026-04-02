@@ -10,4 +10,6 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "ollama>=0.1.0",
     "sentence-transformers>=2.0.0",
+    "litellm>=1.0.0",
+    "textual>=8.2.1",
 ]
