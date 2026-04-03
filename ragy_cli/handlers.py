@@ -66,8 +66,7 @@ def handle_extract():
         console.print("[red]Query cannot be empty[/red]")
         return
 
-    console.print("[cyan]Collection:[/cyan] ", end="")
-    collection = prompt_collection("")
+    collection = prompt_collection("Collection: ")
     if not collection:
         console.print("[red]Collection cannot be empty[/red]")
         return
@@ -123,8 +122,7 @@ def handle_create():
         console.print("[red]Query cannot be empty[/red]")
         return
 
-    console.print("[cyan]Collection name:[/cyan] ", end="")
-    collection = prompt_collection("")
+    collection = prompt_collection("Collection name: ")
     if not collection:
         console.print("[red]Collection name cannot be empty[/red]")
         return
@@ -176,8 +174,7 @@ def handle_list():
 
 
 def handle_show():
-    console.print("[cyan]Collection name (leave empty for all):[/cyan] ", end="")
-    collection_name = prompt_collection("")
+    collection_name = prompt_collection("Collection name (leave empty for all): ")
 
     try:
         if collection_name:
@@ -212,8 +209,7 @@ def handle_show():
 
 
 def handle_status():
-    console.print("[cyan]Collection name:[/cyan] ", end="")
-    collection = prompt_collection("")
+    collection = prompt_collection("Collection name: ")
     if not collection:
         console.print("[red]Collection name cannot be empty[/red]")
         return
@@ -234,8 +230,7 @@ def handle_status():
 
 
 def handle_delete():
-    console.print("[cyan]Collection name:[/cyan] ", end="")
-    collection = prompt_collection("")
+    collection = prompt_collection("Collection name: ")
     if not collection:
         console.print("[red]Collection name cannot be empty[/red]")
         return

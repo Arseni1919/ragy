@@ -95,8 +95,8 @@ def shutdown_api_server():
 
 
 def print_header():
-    console.print(ASCII_LOGO, justify="center")
-    console.print(SUBTITLE, justify="center")
+    console.print(ASCII_LOGO)
+    console.print(SUBTITLE)
     console.print()
 
 
