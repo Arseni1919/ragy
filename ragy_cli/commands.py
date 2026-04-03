@@ -21,6 +21,7 @@ COMMANDS = [
     Command("jobs", "Scheduler jobs", "Usage: jobs"),
     Command("help", "Show this help", "Usage: help"),
     Command("exit", "Exit CLI", "Usage: exit or quit"),
+    Command("shutdown", "Exit CLI and stop API", "Usage: shutdown"),
 ]
 
 COMMAND_MAP = {cmd.name: cmd for cmd in COMMANDS}

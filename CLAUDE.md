@@ -22,6 +22,12 @@
 
 ### Running the CLI
 - **Interactive mode**: `uv run python -m ragy_cli.cli`
+- **Auto-start behavior**:
+  - CLI automatically checks if API server is running
+  - If not running, asks for user approval to start it in background
+  - Shows command to stop API later if needed
+  - If user declines, shows manual start instructions
+- **Shutdown**: Use `shutdown` command to stop both CLI and API server
 - The CLI is an API client that makes HTTP requests to the FastAPI server
 - **Features**:
   - Beautiful gradient ASCII logo and subtitle
@@ -31,6 +37,8 @@
   - Horizontal progress bars for long operations
   - Usage tips for each command
   - Graceful error handling
+  - Auto-start API with user approval
+  - Shutdown command to stop API
 
 ### Environment Variables
 - **All critical configuration variables must be defined in the `.env` file**
