@@ -1,4 +1,4 @@
-from conn_emb_hugging_face.client import get_embedding
+from conn_emb_hugging_face.client import get_query_embedding
 from conn_db.client import client as db_client
 
 
@@ -13,7 +13,7 @@ def extract_relevant_days(
     top_k: int = 10
 ) -> list[dict]:
     try:
-        query_embedding = get_embedding(query)
+        query_embedding = get_query_embedding(query)
 
         collection = db_client.get_collection(name=collection_name)
 

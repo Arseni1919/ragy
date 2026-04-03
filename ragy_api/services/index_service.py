@@ -3,7 +3,7 @@ from datetime import date, timedelta
 from typing import Generator
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from conn_emb_hugging_face.client import get_embedding
+from conn_emb_hugging_face.client import get_document_embedding
 from conn_db.client import client as db_client
 from .search_service import search_with_retry
 
@@ -22,7 +22,7 @@ def process_day(query: str, day_date: str, save_full_data: bool) -> tuple[str, d
     if not content:
         return None
 
-    embedding = get_embedding(content)
+    embedding = get_document_embedding(content)
 
     doc_id = f"{day_date}"
 

@@ -10,7 +10,7 @@ from ragy_api.models import (
     JobInfo
 )
 from ragy_api.dependencies import get_db_client, get_embedding_model
-from conn_emb_hugging_face.client import get_embedding
+from conn_emb_hugging_face.client import get_query_embedding, get_document_embedding
 
 
 router = APIRouter()
@@ -54,13 +54,13 @@ async def get_embedding_info():
         "model": model_name,
         "dimensions": model.get_sentence_embedding_dimension(),
         "max_seq_length": model.max_seq_length,
-        "context_window": "~256 tokens (~190-200 words)"
+        "context_window": "~512 tokens"
     }
 
 
 @router.post("/embedding/encode", response_model=EmbedResponse)
 async def encode_text(request: EmbedRequest):
-    embedding = get_embedding(request.text)
+    embedding = get_document_embedding(request.text)
     return {
         "embedding": embedding,
         "dimensions": len(embedding)
