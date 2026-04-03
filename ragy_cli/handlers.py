@@ -1,3 +1,5 @@
+from prompt_toolkit import PromptSession
+from prompt_toolkit.completion import WordCompleter
 from rich.console import Console
 from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeRemainingColumn
@@ -6,6 +8,25 @@ from ragy_cli.api_client import APIClient
 
 console = Console()
 client = APIClient()
+
+
+def get_collection_completer():
+    try:
+        collections = client.list_collections()
+        return WordCompleter(collections, ignore_case=True)
+    except:
+        return WordCompleter([], ignore_case=True)
+
+
+def prompt_collection(prompt_text: str, allow_empty: bool = False) -> str:
+    completer = get_collection_completer()
+    session = PromptSession(completer=completer)
+
+    try:
+        result = session.prompt(prompt_text).strip()
+        return result
+    except (KeyboardInterrupt, EOFError):
+        return ""
 
 
 def handle_search():
@@ -45,7 +66,8 @@ def handle_extract():
         console.print("[red]Query cannot be empty[/red]")
         return
 
-    collection = console.input("[cyan]Collection:[/cyan] ").strip()
+    console.print("[cyan]Collection:[/cyan] ", end="")
+    collection = prompt_collection("")
     if not collection:
         console.print("[red]Collection cannot be empty[/red]")
         return
@@ -101,7 +123,8 @@ def handle_create():
         console.print("[red]Query cannot be empty[/red]")
         return
 
-    collection = console.input("[cyan]Collection name:[/cyan] ").strip()
+    console.print("[cyan]Collection name:[/cyan] ", end="")
+    collection = prompt_collection("")
     if not collection:
         console.print("[red]Collection name cannot be empty[/red]")
         return
@@ -153,7 +176,8 @@ def handle_list():
 
 
 def handle_show():
-    collection_name = console.input("[cyan]Collection name (leave empty for all):[/cyan] ").strip()
+    console.print("[cyan]Collection name (leave empty for all):[/cyan] ", end="")
+    collection_name = prompt_collection("")
 
     try:
         if collection_name:
@@ -188,7 +212,8 @@ def handle_show():
 
 
 def handle_status():
-    collection = console.input("[cyan]Collection name:[/cyan] ").strip()
+    console.print("[cyan]Collection name:[/cyan] ", end="")
+    collection = prompt_collection("")
     if not collection:
         console.print("[red]Collection name cannot be empty[/red]")
         return
@@ -209,7 +234,8 @@ def handle_status():
 
 
 def handle_delete():
-    collection = console.input("[cyan]Collection name:[/cyan] ").strip()
+    console.print("[cyan]Collection name:[/cyan] ", end="")
+    collection = prompt_collection("")
     if not collection:
         console.print("[red]Collection name cannot be empty[/red]")
         return
