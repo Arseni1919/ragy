@@ -2,7 +2,7 @@ from conn_emb_hugging_face.client import get_embedding
 from conn_db.client import client as db_client
 
 
-def list_collections(*args, **kwargs) -> list[str]:
+def list_collections() -> list[str]:
     collections = db_client.list_collections()
     return [c.name for c in collections]
 
@@ -41,7 +41,3 @@ def extract_relevant_days(
     except Exception as e:
         print(f"Error in extract_relevant_days: {e}")
         return []
-    
-if __name__ == "__main__":
-    collections = list_collections({})
-    print("Collections:", collections)

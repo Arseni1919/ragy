@@ -7,11 +7,18 @@
 - **Use module syntax from project root**: `uv run python -m module.script`
 - Examples:
   - `uv run python -m conn_db.test_client` ✓ (not `uv run python conn_db/test_client.py` ✗)
-  - `uv run python -m ragy_creator.test_client` ✓
   - `uv run python -m conn_llm.test_with_tools` ✓
 - This ensures proper package imports and virtual environment usage
 - All modules have `__init__.py` files for proper package structure
 - Always run from the project root directory
+
+### Running the API Server
+- **Development mode**: `uv run uvicorn ragy_api.main:app --reload --host 0.0.0.0 --port 8000`
+- **Production mode**: `uv run uvicorn ragy_api.main:app --workers 4 --host 0.0.0.0 --port 8000`
+- **Access documentation**:
+  - Interactive Swagger UI: http://localhost:8000/docs
+  - Alternative ReDoc: http://localhost:8000/redoc
+  - OpenAPI JSON: http://localhost:8000/openapi.json
 
 ### Environment Variables
 - **All critical configuration variables must be defined in the `.env` file**
@@ -40,10 +47,14 @@
 - `conn_emb_ollama/` - Alternative embedding (Ollama, requires installation)
 - `conn_tavily/` - Tavily search API client
 - `conn_bright_data/` - Bright Data API client
-- `ragy_creator/` - Indexing orchestrator (365-day construction)
-- `ragy_extractor/` - RAG retrieval logic (finding relevant days)
 - `conn_llm/` - LLM clients (Claude/Ollama)
-- `ragy_ui/` - CLI interface
+- `ragy_api/` - FastAPI application (unified services and routers)
+  - `services/` - Business logic (search, extract, index, database)
+  - `routers/` - REST API endpoints
+  - `main.py` - FastAPI application entry point
+  - `config.py` - Environment configuration
+  - `scheduler.py` - APScheduler for daily updates
+- `ragy_cli/` - CLI interface (to be reimplemented as API client)
 
 ## Development Todo List
 
@@ -53,5 +64,10 @@
 - [ ] Create connection to Bright Data
 - [x] Build the ragy creator (365-day index builder with parallel processing)
 - [x] Build the ragy extractor (vector similarity retrieval)
-- [ ] Connect LLM clients
-- [ ] Create UI interface
+- [x] Connect LLM clients (Claude/Ollama)
+- [x] Create FastAPI application with 13 endpoints
+  - Web search, data extraction (SSE), index creation (SSE)
+  - Database management, system health
+  - APScheduler for daily automatic updates
+- [ ] Reimplement CLI to use API endpoints
+- [x] Create initial CLI interface

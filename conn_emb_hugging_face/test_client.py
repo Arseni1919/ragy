@@ -1,7 +1,3 @@
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 import numpy as np
 from conn_emb_hugging_face.client import get_embedding
 

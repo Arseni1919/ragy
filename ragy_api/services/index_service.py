@@ -1,34 +1,11 @@
 import os
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-import time
 from datetime import date, timedelta
 from typing import Generator
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dotenv import load_dotenv
 
-from conn_tavily.client import client as tavily_client
 from conn_emb_hugging_face.client import get_embedding
 from conn_db.client import client as db_client
-
-load_dotenv()
-
-MAX_CONCURRENT = int(os.getenv("RAGY_MAX_CONCURRENT", "10"))
-MAX_RETRIES = 5
-RETRY_DELAYS = [1, 2, 4, 8, 16]
-
-
-def search_with_retry(query: str, max_retries: int = MAX_RETRIES) -> dict:
-    for attempt in range(max_retries):
-        try:
-            return tavily_client.search(query)
-        except Exception as e:
-            if attempt == max_retries - 1:
-                raise
-            time.sleep(RETRY_DELAYS[attempt])
-    return None
+from .search_service import search_with_retry
 
 
 def process_day(query: str, day_date: str, save_full_data: bool) -> tuple[str, dict, list[float], dict]:
@@ -68,7 +45,8 @@ def create_index(
     query: str,
     collection_name: str,
     save_full_data: bool = True,
-    num_days: int = 365
+    num_days: int = 365,
+    max_concurrent: int = 10
 ) -> Generator[dict, None, None]:
     try:
         dates = []
@@ -82,7 +60,7 @@ def create_index(
         completed = 0
         failed = 0
 
-        with ThreadPoolExecutor(max_workers=MAX_CONCURRENT) as executor:
+        with ThreadPoolExecutor(max_workers=max_concurrent) as executor:
             futures = {
                 executor.submit(process_day, query, day_date, save_full_data): day_date
                 for day_date in dates
@@ -111,7 +89,7 @@ def create_index(
                 yield {
                     "status": "in_progress",
                     "progress": progress,
-                    "message": ""
+                    "message": f"Processed {completed + failed}/{num_days} days"
                 }
 
         yield {
