@@ -21,7 +21,9 @@
   - OpenAPI JSON: http://localhost:8000/openapi.json
 
 ### Running the CLI
-- **Interactive mode**: `uv run python -m ragy_cli.cli`
+- **Recommended**: `uv run ragy` (uses the installed entry point)
+- **Alternative**: `uv run python -m ragy_cli.cli`
+- **Direct command**: After activating venv (`source .venv/bin/activate`), you can use just `ragy`
 - **Auto-start behavior**:
   - CLI automatically checks if API server is running
   - If not running, asks for user approval to start it in background

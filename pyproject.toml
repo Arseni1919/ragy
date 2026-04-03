@@ -25,5 +25,12 @@ dependencies = [
 [project.scripts]
 ragy = "ragy_cli.cli:main"
 
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.uv]
+package = true
+
 [tool.setuptools.packages.find]
 include = ["ragy_*", "conn_*"]
