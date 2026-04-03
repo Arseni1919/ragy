@@ -20,6 +20,18 @@
   - Alternative ReDoc: http://localhost:8000/redoc
   - OpenAPI JSON: http://localhost:8000/openapi.json
 
+### Running the CLI
+- **Interactive mode**: `uv run python -m ragy_cli.cli`
+- The CLI is an API client that makes HTTP requests to the FastAPI server
+- **Features**:
+  - Beautiful gradient ASCII logo and subtitle
+  - Tab completion for commands (type partial command + Tab)
+  - Two-column command menu layout
+  - Rich tables for data display
+  - Horizontal progress bars for long operations
+  - Usage tips for each command
+  - Graceful error handling
+
 ### Environment Variables
 - **All critical configuration variables must be defined in the `.env` file**
 - This includes:
@@ -54,7 +66,12 @@
   - `main.py` - FastAPI application entry point
   - `config.py` - Environment configuration
   - `scheduler.py` - APScheduler for daily updates
-- `ragy_cli/` - CLI interface (to be reimplemented as API client)
+- `ragy_cli/` - CLI interface (API client)
+  - `cli.py` - Main entry point with prompt_toolkit
+  - `constants.py` - ASCII logo and subtitle
+  - `commands.py` - Command registry
+  - `api_client.py` - HTTP client wrapper
+  - `handlers.py` - Command handlers
 
 ## Development Todo List
 
@@ -69,5 +86,8 @@
   - Web search, data extraction (SSE), index creation (SSE)
   - Database management, system health
   - APScheduler for daily automatic updates
-- [ ] Reimplement CLI to use API endpoints
-- [x] Create initial CLI interface
+- [x] Reimplement CLI as API client
+  - Beautiful gradient logo and subtitle
+  - Tab completion with prompt_toolkit
+  - Rich tables and progress bars
+  - 10 commands + help + exit
