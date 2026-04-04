@@ -4,10 +4,11 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     TAVILY_API_KEY: str
     GEMINI_API_KEY: str
-    HF_EMB_MODEL: str = "all-MiniLM-L6-v2"
+    HF_EMB_MODEL: str = "google/embeddinggemma-300m"
+    HF_TOKEN: str | None = None
     OLLAMA_EMB_MODEL: str = "nomic-embed-text"
     DB_PATH: str = "./ragy_db"
-    RAGY_MAX_CONCURRENT: int = 10
+    RAGY_MAX_CONCURRENT: int = 3
     LLM_MODEL: str = "gemini/gemini-2.5-flash-lite"
 
     API_HOST: str = "0.0.0.0"
