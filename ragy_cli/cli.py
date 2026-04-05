@@ -52,11 +52,12 @@ def ensure_api_running() -> bool:
     console.print("[cyan]Starting API server in background...[/cyan]")
 
     try:
-        subprocess.Popen(
+        process = subprocess.Popen(
             ["uv", "run", "uvicorn", "ragy_api.main:app", "--host", settings.API_HOST, "--port", str(settings.API_PORT)],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            start_new_session=True
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            start_new_session=True,
+            text=True
         )
 
         for i in range(10):
@@ -66,13 +67,32 @@ def ensure_api_running() -> bool:
                 console.print(f"[green]✓[/green] API server started on port {settings.API_PORT}\n")
                 return True
             except:
+                poll = process.poll()
+                if poll is not None:
+                    console.print(f"[red]API server process exited with code {poll}[/red]")
+                    console.print("[red]Error output:[/red]")
+                    stderr_output = process.stderr.read()
+                    if stderr_output:
+                        console.print(stderr_output)
+                    return False
                 continue
 
         console.print("[red]Failed to start API server (timeout)[/red]")
+        console.print("[yellow]Checking for errors...[/yellow]")
+
+        poll = process.poll()
+        if poll is not None:
+            stderr_output = process.stderr.read()
+            if stderr_output:
+                console.print("[red]Error output:[/red]")
+                console.print(stderr_output)
+
         return False
 
     except Exception as e:
-        console.print(f"[red]Error starting API: {e}[/red]")
+        console.print(f"[red]Error starting API:[/red]")
+        import traceback
+        console.print(traceback.format_exc())
         return False
 
 
