@@ -49,12 +49,15 @@ echo "⚙️  Creating .env configuration file..."
 if [ -f ".env" ]; then
     echo "⚠️  .env file already exists. Skipping creation."
 else
-    cat > .env << 'EOF'
-# Required API Keys
-TAVILY_API_KEY="your-tavily-api-key-here"
+    echo ""
+    echo "📝 RAGY requires a Tavily API key for web search functionality."
+    echo "   You can get a free API key at: https://tavily.com/"
+    echo ""
+    read -p "Enter your Tavily API key (or press Enter to skip): " tavily_key
 
-# Optional API Keys
-# HF_TOKEN="your-huggingface-token"  # Only needed for gated models
+    cat > .env << EOF
+# Required API Key
+TAVILY_API_KEY="${tavily_key}"
 
 # Embedding Configuration
 HF_EMB_MODEL="all-MiniLM-L6-v2"
@@ -81,23 +84,39 @@ echo "✅ Installation complete!"
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
+
+# Check if API key was provided
+if [ -f ".env" ]; then
+    if grep -q 'TAVILY_API_KEY=""' .env; then
+        echo "⚠️  IMPORTANT: Tavily API Key Required"
+        echo ""
+        echo "  To use RAGY, you need a Tavily API key:"
+        echo ""
+        echo "  1. Get your FREE API key at: https://tavily.com/"
+        echo "  2. Edit .env file and add your key:"
+        echo "     nano .env"
+        echo "     (Replace empty TAVILY_API_KEY with your actual key)"
+        echo ""
+    else
+        echo "✓ Tavily API key configured"
+        echo ""
+    fi
+fi
+
 echo "📝 Next steps:"
 echo ""
-echo "  1. Edit .env file with your API keys:"
-echo "     nano .env"
-echo ""
-echo "  2. Start the API server:"
+echo "  1. Start the API server:"
 echo "     uv run uvicorn ragy_api.main:app --reload"
 echo ""
-echo "  3. In another terminal, start the CLI:"
+echo "  2. In another terminal, start the CLI:"
 echo "     cd ragy"
 echo "     uv run ragy"
 echo ""
-echo "  4. Access API documentation:"
+echo "  3. Access API documentation:"
 echo "     http://localhost:8000/docs"
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 echo "📚 Documentation: https://github.com/Arseni1919/ragy"
-echo "🐛 Issues: https://github.com/Arseni1919/ragy/issues"
+echo "🔑 Get API key: https://tavily.com/"
 echo ""

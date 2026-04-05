@@ -74,9 +74,8 @@ uv sync
 Create a `.env` file:
 
 ```bash
-# Required API Keys
+# Required API Key (ONLY this one is needed to run RAGY)
 TAVILY_API_KEY="your-tavily-api-key"
-GEMINI_API_KEY="your-gemini-api-key"
 
 # Optional Configuration (defaults shown)
 HF_EMB_MODEL="all-MiniLM-L6-v2"
@@ -87,7 +86,10 @@ API_PORT=8000
 SCHEDULER_ENABLED=true
 SCHEDULER_HOUR=2
 SCHEDULER_TIMEZONE="UTC"
+JOBS_DB_PATH="./ragy_jobs.db"
 ```
+
+**⚠️ IMPORTANT:** Only **TAVILY_API_KEY** is required to run RAGY. Get your free API key at [tavily.com](https://tavily.com/).
 
 **4. Start the API server**
 
