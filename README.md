@@ -45,6 +45,8 @@ curl -fsSL https://raw.githubusercontent.com/Arseni1919/ragy/main/install.sh | b
 2. **Start the API**: `uv run uvicorn ragy_api.main:app --reload`
 3. **Launch CLI**: `uv run ragy`
 
+**💡 Tip:** With fast internet, you can run the CLI immediately. Embedding models (~80MB) download automatically in the background. The first query may take 10-30 seconds while models load.
+
 ---
 
 ## 📦 Installation
@@ -110,6 +112,8 @@ uv run ragy
 ```
 
 The CLI automatically checks if the API is running and offers to start it if needed.
+
+**💡 First Run Note:** With fast internet, you can start immediately. Embedding models (~80MB) download automatically in the background on first use. The initial startup may take up to 60 seconds while models download and load. Subsequent runs are instant (models are cached).
 
 **6. Access API documentation**
 

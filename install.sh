@@ -53,7 +53,7 @@ else
     echo "📝 RAGY requires a Tavily API key for web search functionality."
     echo "   You can get a free API key at: https://tavily.com/"
     echo ""
-    read -p "Enter your Tavily API key (or press Enter to skip): " tavily_key
+    read -p "Enter your Tavily API key (or press Enter to skip): " tavily_key < /dev/tty
 
     cat > .env << EOF
 # Required API Key
@@ -114,6 +114,11 @@ echo "     uv run ragy"
 echo ""
 echo "  3. Access API documentation:"
 echo "     http://localhost:8000/docs"
+echo ""
+echo "💡 First Run Tip:"
+echo "   With fast internet, start the CLI right away!"
+echo "   Embedding models (~80MB) download in background."
+echo "   First query may take 10-30 seconds while models load."
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
