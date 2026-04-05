@@ -75,23 +75,37 @@ uv sync
 
 **3. Configure environment**
 
-Create a `.env` file:
+Create a `.env` file with your API keys:
 
 ```bash
 # Required API Keys
-TAVILY_API_KEY="your-tavily-api-key"
-GEMINI_API_KEY="your-gemini-api-key"
+TAVILY_API_KEY="your-tavily-api-key-here"
 
-# Optional Configuration (defaults shown)
-HF_EMB_MODEL="all-MiniLM-L6-v2"
+# Optional API Keys
+HF_TOKEN="your-huggingface-token"  # Only needed for gated models like embeddinggemma
+
+# Embedding Configuration
+HF_EMB_MODEL="all-MiniLM-L6-v2"  # Default: all-MiniLM-L6-v2 (no token needed)
+# HF_EMB_MODEL="google/embeddinggemma-300m"  # Requires HF_TOKEN
+
+# Database & Performance
 DB_PATH="./ragy_db"
 RAGY_MAX_CONCURRENT=10
+
+# API Server
 API_HOST="0.0.0.0"
 API_PORT=8000
+
+# Background Jobs (APScheduler)
 SCHEDULER_ENABLED=true
 SCHEDULER_HOUR=2
 SCHEDULER_TIMEZONE="UTC"
+JOBS_DB_PATH="./ragy_jobs.db"
 ```
+
+**Getting API Keys:**
+- **Tavily API** (required): Get your free API key at [tavily.com](https://tavily.com/) - used for web search
+- **Hugging Face Token** (optional): Get token at [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) - only needed for gated models
 
 **4. Start the API server**
 

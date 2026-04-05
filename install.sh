@@ -52,17 +52,26 @@ else
     cat > .env << 'EOF'
 # Required API Keys
 TAVILY_API_KEY="your-tavily-api-key-here"
-GEMINI_API_KEY="your-gemini-api-key-here"
 
-# Optional Configuration (defaults shown)
+# Optional API Keys
+# HF_TOKEN="your-huggingface-token"  # Only needed for gated models
+
+# Embedding Configuration
 HF_EMB_MODEL="all-MiniLM-L6-v2"
+
+# Database & Performance
 DB_PATH="./ragy_db"
 RAGY_MAX_CONCURRENT=10
+
+# API Server
 API_HOST="0.0.0.0"
 API_PORT=8000
+
+# Background Jobs
 SCHEDULER_ENABLED=true
 SCHEDULER_HOUR=2
 SCHEDULER_TIMEZONE="UTC"
+JOBS_DB_PATH="./ragy_jobs.db"
 EOF
     echo "✓ .env file created"
 fi
