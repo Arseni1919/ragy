@@ -1,9 +1,9 @@
 <div align="center">
 
 <!-- PLACEHOLDER: Add your banner image here -->
-![RagyApp Banner](docs/screenshots/banner.png)
+![RAGY Banner](docs/screenshots/banner.png)
 
-# RagyApp
+# RAGY
 
 **OS for Your RAG**
 
@@ -380,7 +380,7 @@ Shows:
 
 ## 🤖 MCP Integration
 
-RagyApp exposes its API through the Model Context Protocol (MCP), allowing AI agents like Claude to interact with your RAG system.
+RAGY exposes its API through the Model Context Protocol (MCP), allowing AI agents like Claude to interact with your RAG system.
 
 ### Available MCP Tools
 
@@ -442,7 +442,7 @@ The server communicates via stdio and requires the FastAPI backend on `localhost
 ## 📁 Project Structure
 
 ```
-RagyApp/
+RAGY/
 ├── ragy_api/              # FastAPI backend
 │   ├── main.py            # Application entry point
 │   ├── config.py          # Environment configuration
@@ -584,7 +584,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-**Made with ❤️ by the RagyApp Team**
+**Made with ❤️ by the RAGY Team**
 
 [Documentation](https://github.com/Arseni1919/ragy) • [Issues](https://github.com/Arseni1919/ragy/issues) • [Discussions](https://github.com/Arseni1919/ragy/discussions)
 
