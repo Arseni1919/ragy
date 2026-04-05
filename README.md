@@ -12,7 +12,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![GitHub](https://img.shields.io/badge/github-Arseni1919%2Fragy-blue)](https://github.com/Arseni1919/ragy)
 
-*A FastAPI-based RAG application that builds 365-day vector indices from daily search queries and enables semantic retrieval of temporal data.*
+*Operating system for your RAG time series database. Build temporal vector indices, analyze patterns across collections and time, schedule background jobs, and perform semantic retrieval with powerful visualization tools.*
 
 </div>
 
@@ -129,7 +129,7 @@ Complete reference of all 21 interactive commands:
 
 | Command | Description | Usage |
 |---------|-------------|-------|
-| `create_index` | Create 365-day vector index | Creates temporal index for specified query |
+| `create_index` | Create temporal vector index | Creates time series index for specified query |
 | `delete_index` | Delete a collection | Removes collection with confirmation |
 | `upload_csv` | Upload CSV to collection | Bulk import from CSV file (drag & drop supported) |
 
@@ -200,7 +200,7 @@ Complete reference of all 19 REST API endpoints:
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/v1/index/create` | Create 365-day index (SSE streaming) |
+| `POST` | `/api/v1/index/create` | Create temporal index (SSE streaming) |
 | `GET` | `/api/v1/index/status/{name}` | Get index creation status |
 
 ### Database
@@ -246,7 +246,7 @@ Complete reference of all 19 REST API endpoints:
 ragy> create_index
 Query: artificial intelligence news
 Collection name: ai_2024
-Number of days (365): 365
+Number of days: 365
 ```
 
 **API:**
@@ -256,7 +256,7 @@ curl -N -X POST http://localhost:8000/api/v1/index/create \
   -d '{
     "query": "artificial intelligence news",
     "collection_name": "ai_2024",
-    "num_days": 365,
+    "num_days": 90,
     "save_full_data": true
   }'
 ```
