@@ -38,7 +38,7 @@ def ensure_api_running() -> bool:
 
     console.print("[yellow]API server is not running.[/yellow]")
     console.print("[cyan]To start API server in background, the following command will be executed:[/cyan]")
-    console.print(f"  [dim]uvicorn ragy_api.main:app --host {settings.API_HOST} --port {settings.API_PORT}[/dim]")
+    console.print(f"  [dim]uv run uvicorn ragy_api.main:app --host {settings.API_HOST} --port {settings.API_PORT}[/dim]")
     console.print("[cyan]To stop it later, use:[/cyan]")
     console.print("  [dim]pkill -f 'uvicorn ragy_api.main:app'[/dim]")
     console.print()
@@ -53,7 +53,7 @@ def ensure_api_running() -> bool:
 
     try:
         subprocess.Popen(
-            ["uvicorn", "ragy_api.main:app", "--host", settings.API_HOST, "--port", str(settings.API_PORT)],
+            ["uv", "run", "uvicorn", "ragy_api.main:app", "--host", settings.API_HOST, "--port", str(settings.API_PORT)],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             start_new_session=True
