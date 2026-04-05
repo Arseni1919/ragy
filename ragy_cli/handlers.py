@@ -173,7 +173,7 @@ def handle_list():
         console.print(f"[red]Error: {e}[/red]")
 
 
-def handle_show():
+def handle_stats():
     collection_name = prompt_collection("Collection name (leave empty for all statistics): ")
 
     try:

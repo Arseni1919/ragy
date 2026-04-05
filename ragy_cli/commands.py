@@ -13,7 +13,7 @@ COMMANDS = [
     Command("extract", "Extract relevant days", "Usage: extract"),
     Command("create", "Create 365-day index", "Usage: create"),
     Command("list", "List all collections", "Usage: list"),
-    Command("show", "Show database content", "Usage: show"),
+    Command("stats", "Show database statistics", "Usage: stats"),
     Command("status", "Check collection status", "Usage: status"),
     Command("delete", "Delete a collection", "Usage: delete"),
     Command("health", "API health check", "Usage: health"),
