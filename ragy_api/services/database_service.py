@@ -74,22 +74,37 @@ def get_collection_status(name: str) -> dict:
 
 
 def get_collection_size_mb(collection_id: str) -> float:
+    import sqlite3
+
     db_path = os.getenv('DB_PATH', './ragy_db')
-    col_dir = os.path.join(db_path, str(collection_id))
+    sqlite_file = os.path.join(db_path, 'chroma.sqlite3')
 
-    if not os.path.exists(col_dir):
+    try:
+        conn = sqlite3.connect(sqlite_file)
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT id FROM segments WHERE collection = ?", (str(collection_id),))
+        segment_ids = [row[0] for row in cursor.fetchall()]
+        conn.close()
+
+        if not segment_ids:
+            return 0.0
+
+        total_bytes = 0
+        for segment_id in segment_ids:
+            seg_dir = os.path.join(db_path, str(segment_id))
+            if os.path.exists(seg_dir):
+                for root, dirs, files in os.walk(seg_dir):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        try:
+                            total_bytes += os.path.getsize(file_path)
+                        except:
+                            pass
+
+        return total_bytes / (1024 * 1024)
+    except:
         return 0.0
-
-    total_bytes = 0
-    for root, dirs, files in os.walk(col_dir):
-        for file in files:
-            file_path = os.path.join(root, file)
-            try:
-                total_bytes += os.path.getsize(file_path)
-            except:
-                pass
-
-    return total_bytes / (1024 * 1024)
 
 
 def get_total_database_size_mb() -> float:
