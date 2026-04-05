@@ -169,6 +169,17 @@ print(response.json())
 
 For testing and demonstration, we use the [Massive Stock News Analysis Database](https://www.kaggle.com/datasets/miguelaenlle/massive-stock-news-analysis-db-for-nlpbacktests) from Kaggle.
 
+### Setup
+
+1. Login to Kaggle and download the dataset
+2. Extract `analyst_ratings_processed.csv` to `sample_data/` directory
+3. Load data into ChromaDB:
+   ```bash
+   uv run python -m sample_data.load_data
+   ```
+
+This creates 20 collections (Stock_MRK, Stock_NVDA, etc.) for the top 20 most popular stocks.
+
 ## Project Structure
 
 ```
