@@ -3,7 +3,8 @@ from ragy_api.models import DatabaseContentResponse, CollectionDetailResponse, M
 from ragy_api.services.database_service import (
     get_all_collections,
     get_collection_by_name,
-    delete_collection
+    delete_collection,
+    get_all_collections_with_stats
 )
 
 
@@ -29,5 +30,13 @@ async def remove_collection(name: str):
     try:
         delete_collection(name)
         return {"message": f"Collection '{name}' deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/stats")
+async def get_database_stats():
+    try:
+        return get_all_collections_with_stats()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -174,35 +174,73 @@ def handle_list():
 
 
 def handle_show():
-    collection_name = prompt_collection("Collection name (leave empty for all): ")
+    collection_name = prompt_collection("Collection name (leave empty for all statistics): ")
 
     try:
         if collection_name:
             with console.status(f"[cyan]Fetching {collection_name}...[/cyan]"):
-                data = client.get_collection(collection_name)
-            collections = [data]
+                stats = client.get_database_stats()
+
+            col_stats = None
+            for col in stats['collections']:
+                if col['name'] == collection_name:
+                    col_stats = col
+                    break
+
+            if not col_stats:
+                console.print(f"[red]Collection '{collection_name}' not found[/red]")
+                return
+
+            console.print(f"\n[bold cyan]Collection: {col_stats['name']}[/bold cyan]\n")
+
+            stats_table = Table(show_header=False, box=None, padding=(0, 2))
+            stats_table.add_column("Metric", style="cyan", width=20)
+            stats_table.add_column("Value", style="white", width=30)
+
+            stats_table.add_row("Documents:", f"{col_stats['count']:,}")
+            stats_table.add_row("Size:", f"{col_stats['size_mb']:.2f} MB")
+            stats_table.add_row("Date Range:", f"{col_stats['earliest_date']} to {col_stats['latest_date']}")
+
+            console.print(stats_table)
         else:
-            with console.status("[cyan]Fetching all collections...[/cyan]"):
-                result = client.get_database_content()
-            collections = result.get('collections', [])
+            with console.status("[cyan]Calculating database statistics...[/cyan]"):
+                stats = client.get_database_stats()
 
-        if not collections:
-            console.print("[yellow]No collections found[/yellow]")
-            return
+            console.print("\n[bold cyan]═══ Overall Database Statistics ═══[/bold cyan]\n")
 
-        for col in collections:
-            table = Table(title=f"Collection: {col['name']} ({col['count']} docs)", title_style="bold cyan")
-            table.add_column("Date", style="cyan", width=12)
-            table.add_column("Content Preview", style="white", width=80)
+            overall_table = Table(show_header=False, box=None, padding=(0, 2))
+            overall_table.add_column("Metric", style="cyan", width=30)
+            overall_table.add_column("Value", style="white", width=20)
 
-            for sample in col.get('sample_data', [])[:5]:
-                table.add_row(
-                    sample.get('date', 'N/A'),
-                    sample.get('content', '')[:78] + "..." if len(sample.get('content', '')) > 80 else sample.get('content', '')
-                )
+            overall_table.add_row("Total Collections:", str(stats['total_collections']))
+            overall_table.add_row("Total Documents:", f"{stats['total_documents']:,}")
+            overall_table.add_row("Total Size:", f"{stats['total_size_mb']:.2f} MB")
+            overall_table.add_row("Average Docs/Collection:", f"{stats['avg_docs_per_collection']:.0f}")
 
-            console.print(table)
+            console.print(overall_table)
             console.print()
+
+            if stats['collections']:
+                console.print("[bold cyan]═══ Collections (Ordered by Size) ═══[/bold cyan]\n")
+
+                collections_table = Table(show_header=True)
+                collections_table.add_column("Collection", style="cyan", width=25)
+                collections_table.add_column("Documents", style="green", width=12, justify="right")
+                collections_table.add_column("Size (MB)", style="yellow", width=12, justify="right")
+                collections_table.add_column("Date Range", style="blue", width=25)
+
+                for col in stats['collections']:
+                    date_range = f"{col['earliest_date']} to {col['latest_date']}"
+                    collections_table.add_row(
+                        col['name'],
+                        f"{col['count']:,}",
+                        f"{col['size_mb']:.2f}",
+                        date_range
+                    )
+
+                console.print(collections_table)
+            else:
+                console.print("[yellow]No collections found[/yellow]")
 
     except Exception as e:
         console.print(f"[red]Error: {e}[/red]")

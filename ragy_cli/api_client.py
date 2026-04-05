@@ -88,3 +88,8 @@ class APIClient:
         response = requests.get(f"{self.base_url}{self.api_prefix}/system/scheduler/jobs")
         response.raise_for_status()
         return response.json()
+
+    def get_database_stats(self) -> dict:
+        response = requests.get(f"{self.base_url}{self.api_prefix}/database/stats")
+        response.raise_for_status()
+        return response.json()
