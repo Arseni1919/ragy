@@ -5,11 +5,12 @@ from conn_emb_hugging_face.client import get_document_embedding
 
 
 def load_stock_data(stock_symbol, df_stock):
-    collection_name = stock_symbol
+    collection_name = f"Stock_{stock_symbol}"
 
     try:
-        db_client.delete_collection(name=collection_name)
-        print(f"  ✓ Deleted existing '{collection_name}' collection")
+        existing = db_client.get_collection(name=collection_name)
+        print(f"  ⊘ Collection '{collection_name}' already exists, skipping\n")
+        return
     except Exception:
         pass
 
