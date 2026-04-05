@@ -8,9 +8,9 @@
 **OS for Your RAG**
 
 <!-- PLACEHOLDER: Add your badges here -->
-[![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)]()
-[![License](https://img.shields.io/badge/license-MIT-green)]()
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)]()
+[![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![GitHub](https://img.shields.io/badge/github-Arseni1919%2Fragy-blue)](https://github.com/Arseni1919/ragy)
 
 *A FastAPI-based RAG application that builds 365-day vector indices from daily search queries and enables semantic retrieval of temporal data.*
 
@@ -40,7 +40,7 @@
 ### One-Command Installation
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/RagyApp/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Arseni1919/ragy/main/install.sh | bash
 ```
 
 ### Quick Setup
@@ -63,8 +63,8 @@ curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/RagyApp/main/install.
 **1. Clone the repository**
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/RagyApp.git
-cd RagyApp
+git clone https://github.com/Arseni1919/ragy.git
+cd ragy
 ```
 
 **2. Install dependencies**
@@ -410,7 +410,7 @@ Edit your `claude_desktop_config.json`:
     "ragy": {
       "command": "uv",
       "args": ["run", "ragy-mcp"],
-      "cwd": "/absolute/path/to/RagyApp"
+      "cwd": "/absolute/path/to/ragy"
     }
   }
 }
@@ -541,7 +541,7 @@ We welcome contributions! Here's how you can help:
 ### Development Setup
 
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/RagyApp.git`
+2. Clone your fork: `git clone https://github.com/Arseni1919/ragy.git`
 3. Install dependencies: `uv sync`
 4. Create a branch: `git checkout -b feature/your-feature`
 5. Make changes and test
@@ -561,7 +561,7 @@ See [CLAUDE.md](CLAUDE.md) for:
 
 Found a bug? Have a feature request?
 
-- **GitHub Issues**: https://github.com/YOUR_USERNAME/RagyApp/issues
+- **GitHub Issues**: https://github.com/Arseni1919/ragy/issues
 - Include: OS, Python version, error messages, steps to reproduce
 
 ---
@@ -586,6 +586,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ by the RagyApp Team**
 
-[Documentation](https://github.com/YOUR_USERNAME/RagyApp) • [Issues](https://github.com/YOUR_USERNAME/RagyApp/issues) • [Discussions](https://github.com/YOUR_USERNAME/RagyApp/discussions)
+[Documentation](https://github.com/Arseni1919/ragy) • [Issues](https://github.com/Arseni1919/ragy/issues) • [Discussions](https://github.com/Arseni1919/ragy/discussions)
 
 </div>

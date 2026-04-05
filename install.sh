@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Installing RagyApp..."
+echo "🚀 Installing ragy..."
 echo ""
 
 if ! command -v python3 &> /dev/null; then
@@ -30,13 +30,13 @@ if ! command -v uv &> /dev/null; then
     echo ""
 fi
 
-echo "📥 Cloning RagyApp repository..."
-if [ -d "RagyApp" ]; then
-    echo "⚠️  RagyApp directory already exists. Skipping clone."
-    cd RagyApp
+echo "📥 Cloning ragy repository..."
+if [ -d "ragy" ]; then
+    echo "⚠️  ragy directory already exists. Skipping clone."
+    cd ragy
 else
-    git clone https://github.com/YOUR_USERNAME/RagyApp.git
-    cd RagyApp
+    git clone https://github.com/Arseni1919/ragy.git
+    cd ragy
 fi
 echo ""
 
@@ -81,7 +81,7 @@ echo "  2. Start the API server:"
 echo "     uv run uvicorn ragy_api.main:app --reload"
 echo ""
 echo "  3. In another terminal, start the CLI:"
-echo "     cd RagyApp"
+echo "     cd ragy"
 echo "     uv run ragy"
 echo ""
 echo "  4. Access API documentation:"
@@ -89,6 +89,6 @@ echo "     http://localhost:8000/docs"
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "📚 Documentation: https://github.com/YOUR_USERNAME/RagyApp"
-echo "🐛 Issues: https://github.com/YOUR_USERNAME/RagyApp/issues"
+echo "📚 Documentation: https://github.com/Arseni1919/ragy"
+echo "🐛 Issues: https://github.com/Arseni1919/ragy/issues"
 echo ""
