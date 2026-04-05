@@ -1,13 +1,13 @@
 <div align="center">
 
-<!-- PLACEHOLDER: Add your banner image here -->
+
 ![RAGY Banner](docs/screenshots/banner.png)
 
 # RAGY
 
 **OS for Your RAG**
 
-<!-- PLACEHOLDER: Add your badges here -->
+
 [![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![GitHub](https://img.shields.io/badge/github-Arseni1919%2Fragy-blue)](https://github.com/Arseni1919/ragy)
@@ -34,7 +34,7 @@
 
 ## 🚀 Quick Start
 
-<!-- PLACEHOLDER: Add screenshot of CLI with logo and menu -->
+
 ![CLI Interface](docs/screenshots/cli-interface.png)
 
 ### One-Command Installation
@@ -75,37 +75,23 @@ uv sync
 
 **3. Configure environment**
 
-Create a `.env` file with your API keys:
+Create a `.env` file:
 
 ```bash
 # Required API Keys
-TAVILY_API_KEY="your-tavily-api-key-here"
+TAVILY_API_KEY="your-tavily-api-key"
+GEMINI_API_KEY="your-gemini-api-key"
 
-# Optional API Keys
-HF_TOKEN="your-huggingface-token"  # Only needed for gated models like embeddinggemma
-
-# Embedding Configuration
-HF_EMB_MODEL="all-MiniLM-L6-v2"  # Default: all-MiniLM-L6-v2 (no token needed)
-# HF_EMB_MODEL="google/embeddinggemma-300m"  # Requires HF_TOKEN
-
-# Database & Performance
+# Optional Configuration (defaults shown)
+HF_EMB_MODEL="all-MiniLM-L6-v2"
 DB_PATH="./ragy_db"
 RAGY_MAX_CONCURRENT=10
-
-# API Server
 API_HOST="0.0.0.0"
 API_PORT=8000
-
-# Background Jobs (APScheduler)
 SCHEDULER_ENABLED=true
 SCHEDULER_HOUR=2
 SCHEDULER_TIMEZONE="UTC"
-JOBS_DB_PATH="./ragy_jobs.db"
 ```
-
-**Getting API Keys:**
-- **Tavily API** (required): Get your free API key at [tavily.com](https://tavily.com/) - used for web search
-- **Hugging Face Token** (optional): Get token at [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) - only needed for gated models
 
 **4. Start the API server**
 
@@ -275,9 +261,6 @@ curl -N -X POST http://localhost:8000/api/v1/index/create \
   }'
 ```
 
-<!-- PLACEHOLDER: Add screenshot of index creation -->
-![Index Creation](docs/screenshots/create-index.png)
-
 ---
 
 ### Example 2: Search and Extract Data
@@ -333,14 +316,14 @@ Optional columns: Any additional columns stored as metadata
 
 ### Example 4: Visualize with Xray
 
-<!-- PLACEHOLDER: Add screenshot of xray visualization -->
+
 ![Xray Timeline](docs/screenshots/xray-timeline.png)
 
 **CLI:**
 ```bash
 ragy> xray
-Collection: ai_2024
-Query: GPT-4
+Collection: Stock_JNJ
+Query: high price expected
 Top K: 10
 ```
 
@@ -377,7 +360,7 @@ curl -X POST http://localhost:8000/api/v1/system/scheduler/jobs/create \
 
 ### Example 6: View Database Statistics
 
-<!-- PLACEHOLDER: Add screenshot of stats command -->
+
 ![Database Stats](docs/screenshots/stats.png)
 
 **CLI:**
@@ -440,8 +423,6 @@ Ask Claude:
 - "Show me database statistics"
 - "Extract documents about machine learning from the ai_2024 collection"
 
-<!-- PLACEHOLDER: Add screenshot of Claude using MCP tools -->
-![MCP Integration](docs/screenshots/mcp-integration.png)
 
 ### Testing MCP Server
 
@@ -598,7 +579,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-**Made with ❤️ by the RAGY Team**
+**Made with ❤️ by the Arseniy**
 
 [Documentation](https://github.com/Arseni1919/ragy) • [Issues](https://github.com/Arseni1919/ragy/issues) • [Discussions](https://github.com/Arseni1919/ragy/discussions)
 
