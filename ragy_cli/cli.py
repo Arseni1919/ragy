@@ -49,7 +49,7 @@ def ensure_api_running() -> bool:
         console.print("  [dim]uv run uvicorn ragy_api.main:app --reload[/dim]")
         return False
 
-    console.print("[cyan]Starting API server in background...[/cyan]")
+    console.print("[cyan]Starting API server (loading embedding model, ~15 seconds)...[/cyan]")
 
     try:
         process = subprocess.Popen(
@@ -60,11 +60,11 @@ def ensure_api_running() -> bool:
             text=True
         )
 
-        for i in range(10):
+        for i in range(30):
             time.sleep(1)
             try:
                 client.health_check()
-                console.print(f"[green]✓[/green] API server started on port {settings.API_PORT}\n")
+                console.print(f"[green]✓[/green] API server started on port {settings.API_PORT} (took {i+1}s)\n")
                 return True
             except:
                 poll = process.poll()
@@ -75,9 +75,12 @@ def ensure_api_running() -> bool:
                     if stderr_output:
                         console.print(stderr_output)
                     return False
+
+                if i % 5 == 4:
+                    console.print(f"[dim]Still loading... ({i+1}s)[/dim]")
                 continue
 
-        console.print("[red]Failed to start API server (timeout)[/red]")
+        console.print("[red]Failed to start API server (timeout after 30s)[/red]")
         console.print("[yellow]Checking for errors...[/yellow]")
 
         poll = process.poll()
