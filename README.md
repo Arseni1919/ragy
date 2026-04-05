@@ -165,6 +165,10 @@ response = requests.post(
 print(response.json())
 ```
 
+## Sample Dataset
+
+For testing and demonstration, we use the [Massive Stock News Analysis Database](https://www.kaggle.com/datasets/miguelaenlle/massive-stock-news-analysis-db-for-nlpbacktests) from Kaggle.
+
 ## Project Structure
 
 ```
