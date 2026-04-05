@@ -26,6 +26,7 @@ COMMANDS = [
     Command("tail_index", "Show last 5 documents", "Usage: tail_index"),
     Command("change_emb", "Change embedding model", "Usage: change_emb"),
     Command("xray", "Visualize similarity timeline", "Usage: xray"),
+    Command("upload_csv", "Upload CSV to collection", "Usage: upload_csv"),
     Command("help", "Show this help", "Usage: help"),
     Command("exit", "Exit CLI", "Usage: exit or quit"),
     Command("shutdown", "Exit CLI and stop API", "Usage: shutdown"),

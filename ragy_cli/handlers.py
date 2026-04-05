@@ -861,3 +861,28 @@ def handle_xray():
         if show_tables:
             _display_results_table(timeline_data['top_results'], query, top_k, col_name)
         console.print()
+
+def handle_upload_csv():
+    from pathlib import Path
+    file_path = console.input("[cyan]CSV file path (drag file here):[/cyan] ").strip().strip("'\"")
+    if not file_path:
+        console.print("[red]File path cannot be empty[/red]")
+        return
+    path = Path(file_path)
+    if not path.exists():
+        console.print(f"[red]File not found: {file_path}[/red]")
+        return
+    if not path.suffix.lower() == '.csv':
+        console.print("[red]File must be a CSV file[/red]")
+        return
+    collection_name = prompt_collection("Collection name (new or existing): ")
+    if not collection_name:
+        console.print("[red]Collection name cannot be empty[/red]")
+        return
+    try:
+        with console.status(f"[cyan]Uploading CSV to '{collection_name}'...[/cyan]"):
+            result = client.upload_csv(str(path), collection_name)
+        console.print(f"[green]✓[/green] Uploaded {result['uploaded']} documents to '{collection_name}'")
+        console.print(f"[dim]Total documents in collection: {result['total_documents']}[/dim]")
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")

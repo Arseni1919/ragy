@@ -143,3 +143,15 @@ class APIClient:
         )
         response.raise_for_status()
         return response.json()
+
+    def upload_csv(self, file_path: str, collection_name: str) -> dict:
+        with open(file_path, 'rb') as f:
+            files = {'file': (file_path, f, 'text/csv')}
+            data = {'collection_name': collection_name}
+            response = requests.post(
+                f"{self.base_url}{self.api_prefix}/upload/csv",
+                files=files,
+                data=data
+            )
+            response.raise_for_status()
+            return response.json()

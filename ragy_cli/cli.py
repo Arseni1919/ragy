@@ -25,6 +25,7 @@ from ragy_cli.handlers import (
     handle_tail_index,
     handle_change_emb_model,
     handle_xray,
+    handle_upload_csv,
 )
 
 
@@ -186,6 +187,7 @@ def main():
         "tail_index": handle_tail_index,
         "change_emb": handle_change_emb_model,
         "xray": handle_xray,
+        "upload_csv": handle_upload_csv,
     }
 
     while True:

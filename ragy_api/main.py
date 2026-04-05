@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from ragy_api.config import settings
 from ragy_api.scheduler import init_scheduler, shutdown_scheduler
-from ragy_api.routers import search, extract, index, database, system
+from ragy_api.routers import search, extract, index, database, system, upload
 
 
 @asynccontextmanager
@@ -33,6 +33,7 @@ app.include_router(extract.router, prefix=f"{settings.API_V1_PREFIX}/extract", t
 app.include_router(index.router, prefix=f"{settings.API_V1_PREFIX}/index", tags=["index"])
 app.include_router(database.router, prefix=f"{settings.API_V1_PREFIX}/database", tags=["database"])
 app.include_router(system.router, prefix=f"{settings.API_V1_PREFIX}/system", tags=["system"])
+app.include_router(upload.router, prefix=f"{settings.API_V1_PREFIX}/upload", tags=["upload"])
 
 
 @app.get("/")
