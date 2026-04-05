@@ -198,7 +198,6 @@ def handle_show():
             stats_table.add_column("Value", style="white", width=30)
 
             stats_table.add_row("Documents:", f"{col_stats['count']:,}")
-            stats_table.add_row("Size:", f"{col_stats['size_mb']:.2f} MB")
             stats_table.add_row("Date Range:", f"{col_stats['earliest_date']} to {col_stats['latest_date']}")
 
             console.print(stats_table)
@@ -221,20 +220,18 @@ def handle_show():
             console.print()
 
             if stats['collections']:
-                console.print("[bold cyan]═══ Collections (Ordered by Size) ═══[/bold cyan]\n")
+                console.print("[bold cyan]═══ Collections (Ordered by Documents) ═══[/bold cyan]\n")
 
                 collections_table = Table(show_header=True)
-                collections_table.add_column("Collection", style="cyan", width=25)
-                collections_table.add_column("Documents", style="green", width=12, justify="right")
-                collections_table.add_column("Size (MB)", style="yellow", width=12, justify="right")
-                collections_table.add_column("Date Range", style="blue", width=25)
+                collections_table.add_column("Collection", style="cyan", width=30)
+                collections_table.add_column("Documents", style="green", width=15, justify="right")
+                collections_table.add_column("Date Range", style="blue", width=30)
 
                 for col in stats['collections']:
                     date_range = f"{col['earliest_date']} to {col['latest_date']}"
                     collections_table.add_row(
                         col['name'],
                         f"{col['count']:,}",
-                        f"{col['size_mb']:.2f}",
                         date_range
                     )
 
