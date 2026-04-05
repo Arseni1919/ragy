@@ -6,7 +6,7 @@ from rich.console import Console
 from rich.table import Table
 from ragy_api.config import settings
 from ragy_cli.constants import ASCII_LOGO, SUBTITLE
-from ragy_cli.commands import COMMANDS, COMMAND_MAP
+from ragy_cli.commands import COMMANDS, COMMAND_MAP, COMMAND_GROUPS
 from ragy_cli.handlers import (
     handle_search,
     handle_extract,
@@ -133,27 +133,26 @@ def print_header():
 
 
 def print_help():
-    table = Table(show_header=False, box=None, padding=(0, 2))
-    table.add_column("Command", style="cyan", width=12)
-    table.add_column("Description", style="white", width=28)
-    table.add_column("Command", style="cyan", width=12)
-    table.add_column("Description", style="white", width=28)
-
-    mid = len(COMMANDS) // 2 + len(COMMANDS) % 2
-    for i in range(mid):
-        left_cmd = COMMANDS[i]
-        right_cmd = COMMANDS[i + mid] if i + mid < len(COMMANDS) else None
-
-        if right_cmd:
-            table.add_row(
-                left_cmd.name,
-                left_cmd.description,
-                right_cmd.name,
-                right_cmd.description
-            )
+    groups = list(COMMAND_GROUPS.items())
+    table = Table(show_header=False, box=None, padding=(0, 3))
+    table.add_column("Left", style="white")
+    table.add_column("Right", style="white")
+    left_groups = []
+    right_groups = []
+    for i, (group_name, commands) in enumerate(groups):
+        lines = [f"[bold yellow]{group_name}[/bold yellow]"]
+        for cmd in commands:
+            lines.append(f"[cyan]{cmd.name:14}[/cyan] {cmd.description}")
+        lines.append("")
+        if i < len(groups) // 2 + len(groups) % 2:
+            left_groups.extend(lines)
         else:
-            table.add_row(left_cmd.name, left_cmd.description, "", "")
-
+            right_groups.extend(lines)
+    max_rows = max(len(left_groups), len(right_groups))
+    left_groups.extend([""] * (max_rows - len(left_groups)))
+    right_groups.extend([""] * (max_rows - len(right_groups)))
+    for left, right in zip(left_groups, right_groups):
+        table.add_row(left, right)
     console.print(table)
     console.print()
 
