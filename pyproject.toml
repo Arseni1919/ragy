@@ -20,6 +20,8 @@ dependencies = [
     "pydantic-settings>=2.0.0",
     "requests>=2.31.0",
     "prompt-toolkit>=3.0.0",
+    "pandas>=2.0.0",
+    "tqdm>=4.66.0",
 ]
 
 [project.scripts]
@@ -33,4 +35,4 @@ build-backend = "setuptools.build_meta"
 package = true
 
 [tool.setuptools.packages.find]
-include = ["ragy_*", "conn_*"]
+include = ["ragy_*", "conn_*", "sample_data"]

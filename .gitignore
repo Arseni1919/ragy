@@ -11,3 +11,6 @@ wheels/
 chroma_data
 ragy_db
 .env
+
+# Sample data - ignore CSV but track Python scripts
+sample_data/*.csv
