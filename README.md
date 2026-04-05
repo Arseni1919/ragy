@@ -10,6 +10,8 @@
 
 *Operating system for your RAG time series database. Build temporal vector indices, analyze patterns across collections and time, schedule background jobs, and perform semantic retrieval with powerful visualization tools.*
 
+**About the Name:** RAGY is inspired by "RAG a Year" — the concept of indexing a full time period once (a year, a month, or any range), then sampling relevant days through semantic similarity instead of recollecting all data for every new query.
+
 </div>
 
 ---
