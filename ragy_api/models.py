@@ -9,7 +9,7 @@ class WebSearchRequest(BaseModel):
 class SearchResult(BaseModel):
     title: str
     url: str
-    content: str
+    raw_content: str
 
 
 class WebSearchResponse(BaseModel):
@@ -30,7 +30,6 @@ class CollectionsResponse(BaseModel):
 class IndexCreateRequest(BaseModel):
     query: str = Field(..., description="Search query for index")
     collection_name: str = Field(..., description="Collection name")
-    save_full_data: bool = Field(True, description="Save full content or date only")
     num_days: int = Field(365, description="Number of days to index")
 
 
@@ -101,3 +100,37 @@ class ProgressUpdate(BaseModel):
     status: str
     progress: float
     message: str
+
+
+class JobCreateRequest(BaseModel):
+    query: str = Field(..., description="Search query")
+    collection_name: str = Field(..., description="Target collection")
+    interval_type: str = Field(..., description="minute, hour, day, week, month, year")
+    interval_amount: int = Field(..., description="Interval amount (e.g., 5)")
+
+
+class JobCreateResponse(BaseModel):
+    job_id: int
+    apscheduler_job_id: str
+    query: str
+    collection_name: str
+    interval_type: str
+    interval_amount: int
+    message: str
+
+
+class UserJobInfo(BaseModel):
+    job_id: int
+    apscheduler_job_id: str
+    query: str
+    collection_name: str
+    interval_type: str
+    interval_amount: int
+    next_run: Optional[str]
+    run_count: int
+    error_count: int
+    last_success: Optional[str]
+
+
+class UserJobsResponse(BaseModel):
+    jobs: list[UserJobInfo]

@@ -1,9 +1,9 @@
 import json
 import re
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from ragy_api.models import CollectionsResponse, ExtractRequest
-from ragy_api.services.extract_service import list_collections, extract_relevant_days
+from ragy_api.services.extract_service import list_collections, extract_relevant_days, extract_all_with_scores
 from ragy_api.services.search_service import web_search
 
 
@@ -41,7 +41,7 @@ async def extract_data(request: ExtractRequest):
 
                     formatted_content = f"Web Search Results:\n"
                     for r in web_result.get('results', [])[:3]:
-                        formatted_content += f"- {r['title']}\n  {r['url']}\n  {r['content'][:150]}...\n\n"
+                        formatted_content += f"- {r['title']}\n  {r['url']}\n  {r['raw_content'][:150]}...\n\n"
 
                     enriched_results.append({
                         "date": result['date'],
@@ -66,3 +66,12 @@ async def extract_data(request: ExtractRequest):
             yield f"data: {json.dumps({'status': 'error', 'progress': 0.0, 'message': str(e)})}\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream")
+
+@router.post("/all")
+async def extract_all(request: ExtractRequest):
+    """Get all documents with scores for visualization"""
+    try:
+        results = extract_all_with_scores(request.query, request.collection_name)
+        return {"query": request.query, "results": results}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

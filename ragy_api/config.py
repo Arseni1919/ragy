@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     SCHEDULER_ENABLED: bool = True
     SCHEDULER_HOUR: int = 2
     SCHEDULER_TIMEZONE: str = "UTC"
+    JOBS_DB_PATH: str = "./ragy_jobs.db"
 
     class Config:
         env_file = ".env"

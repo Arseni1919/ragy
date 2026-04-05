@@ -11,12 +11,11 @@ router = APIRouter()
 
 
 @router.post("/create")
-async def create_index_endpoint(request: IndexCreateRequest):
-    async def generate():
+def create_index_endpoint(request: IndexCreateRequest):
+    def generate():
         for update in create_index(
             request.query,
             request.collection_name,
-            request.save_full_data,
             request.num_days,
             settings.RAGY_MAX_CONCURRENT
         ):

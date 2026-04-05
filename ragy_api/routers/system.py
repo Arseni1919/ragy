@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, HTTPException
 from ragy_api.models import (
     HealthResponse,
     EmbeddingInfoResponse,
@@ -7,7 +7,11 @@ from ragy_api.models import (
     MessageResponse,
     EmbedRequest,
     EmbedResponse,
-    JobInfo
+    JobInfo,
+    JobCreateRequest,
+    JobCreateResponse,
+    UserJobInfo,
+    UserJobsResponse
 )
 from ragy_api.dependencies import get_db_client, get_embedding_model
 from conn_emb_hugging_face.client import get_query_embedding, get_document_embedding
@@ -91,3 +95,65 @@ async def trigger_scheduler_update(request: TriggerRequest, background_tasks: Ba
 
     background_tasks.add_task(trigger_manual_update, request.collection_name)
     return {"message": f"Update triggered for collection '{request.collection_name}'"}
+
+
+@router.post("/scheduler/jobs/create", response_model=JobCreateResponse)
+async def create_scheduled_job(request: JobCreateRequest):
+    from ragy_api.scheduler import create_user_job
+
+    valid_intervals = ['minute', 'hour', 'day', 'week', 'month', 'year']
+    if request.interval_type not in valid_intervals:
+        raise HTTPException(status_code=400, detail=f"Invalid interval type. Must be one of: {valid_intervals}")
+
+    if request.interval_amount < 1:
+        raise HTTPException(status_code=400, detail="Interval amount must be at least 1")
+
+    result = create_user_job(
+        query=request.query,
+        collection_name=request.collection_name,
+        interval_type=request.interval_type,
+        interval_amount=request.interval_amount
+    )
+
+    interval_desc = f"every {request.interval_amount} {request.interval_type}{'s' if request.interval_amount > 1 else ''}"
+    result['message'] = f"Job created: will run {interval_desc}"
+
+    return result
+
+
+@router.get("/scheduler/jobs/user", response_model=UserJobsResponse)
+async def get_user_jobs():
+    from ragy_api.scheduler import scheduler, job_metadata_store
+
+    metadata_jobs = job_metadata_store.list_jobs()
+    jobs = []
+
+    for meta in metadata_jobs:
+        apscheduler_job = scheduler.get_job(meta['apscheduler_job_id'])
+        next_run = str(apscheduler_job.next_run_time) if apscheduler_job and apscheduler_job.next_run_time else None
+
+        jobs.append(UserJobInfo(
+            job_id=meta['id'],
+            apscheduler_job_id=meta['apscheduler_job_id'],
+            query=meta['query'],
+            collection_name=meta['collection_name'],
+            interval_type=meta['interval_type'],
+            interval_amount=meta['interval_amount'],
+            next_run=next_run,
+            run_count=meta['run_count'],
+            error_count=meta['error_count'],
+            last_success=meta['last_success']
+        ))
+
+    return {"jobs": jobs}
+
+
+@router.delete("/scheduler/jobs/delete/{job_id}", response_model=MessageResponse)
+async def delete_scheduled_job(job_id: int):
+    from ragy_api.scheduler import delete_user_job
+
+    try:
+        delete_user_job(job_id)
+        return {"message": f"Job {job_id} deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))

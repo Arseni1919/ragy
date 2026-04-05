@@ -43,19 +43,17 @@ def handle_search():
             console.print("[yellow]No results found[/yellow]")
             return
 
-        table = Table(title=f"Search Results: {result['query']}", title_style="bold cyan")
-        table.add_column("Title", style="cyan", width=40)
-        table.add_column("URL", style="blue", width=50)
-        table.add_column("Content", style="white", width=60)
+        console.print(f"\n[bold cyan]Search Results: {result['query']}[/bold cyan]\n")
 
-        for r in result['results'][:5]:
-            table.add_row(
-                r['title'][:38] + "..." if len(r['title']) > 40 else r['title'],
-                r['url'][:48] + "..." if len(r['url']) > 50 else r['url'],
-                r['content'][:58] + "..." if len(r['content']) > 60 else r['content']
-            )
+        for i, r in enumerate(result['results'][:5], 1):
+            console.print(f"[bold cyan]{r['title']}[/bold cyan]")
+            console.print(f"[blue]{r['url']}[/blue]")
+            console.print(f"{r['raw_content']}")
 
-        console.print(table)
+            if i < len(result['results'][:5]):
+                console.print("\n" + "─" * 100 + "\n")
+
+        console.print()
     except Exception as e:
         console.print(f"[red]Error: {e}[/red]")
 
@@ -127,8 +125,6 @@ def handle_create():
         console.print("[red]Collection name cannot be empty[/red]")
         return
 
-    full_data = console.input("[cyan]Save full data? (y/N):[/cyan] ").strip().lower() in ['y', 'yes']
-
     days_input = console.input("[cyan]Number of days (default 365):[/cyan] ").strip()
     num_days = int(days_input) if days_input else 365
 
@@ -143,7 +139,7 @@ def handle_create():
         ) as progress:
             task = progress.add_task(f"Creating index ({num_days} days)...", total=100)
 
-            for update in client.create_index(query, collection, full_data, num_days):
+            for update in client.create_index(query, collection, num_days):
                 if update['status'] == 'in_progress':
                     progress.update(task, completed=update['progress'], description=update.get('message', 'Creating...'))
                 elif update['status'] == 'success':
@@ -171,6 +167,42 @@ def handle_list():
 
     except Exception as e:
         console.print(f"[red]Error: {e}[/red]")
+
+
+def render_timeline(distribution: dict) -> None:
+    import plotext as plt
+    from datetime import datetime
+
+    dates = distribution.get('dates', [])
+    counts = distribution.get('counts', [])
+
+    if not dates or not counts:
+        return
+
+    x_values = list(range(len(dates)))
+
+    num_labels = min(8, len(dates))
+    if num_labels > 0:
+        step = max(1, len(dates) // num_labels)
+        label_indices = list(range(0, len(dates), step))
+        if label_indices[-1] != len(dates) - 1:
+            label_indices.append(len(dates) - 1)
+
+        x_labels = [dates[i] for i in label_indices]
+        x_coords = [i for i in label_indices]
+    else:
+        x_labels = []
+        x_coords = []
+
+    plt.clear_figure()
+    plt.theme('clear')
+    plt.plot(x_values, counts)
+    plt.xticks(x_coords, x_labels)
+    plt.title("Document Distribution Over Time")
+    plt.xlabel("Date")
+    plt.ylabel("Documents")
+    plt.plot_size(width=None, height=15)
+    plt.show()
 
 
 def handle_stats():
@@ -201,6 +233,32 @@ def handle_stats():
             stats_table.add_row("Date Range:", f"{col_stats['earliest_date']} to {col_stats['latest_date']}")
 
             console.print(stats_table)
+
+            try:
+                distribution = client.get_collection_distribution(collection_name)
+                console.print()
+                render_timeline(distribution)
+            except Exception as e:
+                console.print(f"[yellow]Could not load timeline: {e}[/yellow]")
+
+            try:
+                collection_details = client.get_collection(collection_name)
+                sample_data = collection_details.get('sample_data', [])
+
+                if sample_data:
+                    console.print(f"\n[bold cyan]Sample Documents (first 5):[/bold cyan]\n")
+
+                    docs_table = Table(show_header=True)
+                    docs_table.add_column("#", style="dim", width=3, no_wrap=True)
+                    docs_table.add_column("Date", style="cyan", width=18, no_wrap=True)
+                    docs_table.add_column("Content", style="white", width=81)
+
+                    for i, doc in enumerate(sample_data, 1):
+                        docs_table.add_row(str(i), doc['date'], doc['content'])
+
+                    console.print(docs_table)
+            except Exception as e:
+                console.print(f"[yellow]Could not load sample documents: {e}[/yellow]")
         else:
             with console.status("[cyan]Calculating database statistics...[/cyan]"):
                 stats = client.get_database_stats()
@@ -316,27 +374,490 @@ def handle_info():
 
 def handle_jobs():
     try:
-        with console.status("[cyan]Fetching scheduler jobs...[/cyan]"):
-            jobs_data = client.get_scheduler_jobs()
+        with console.status("[cyan]Fetching scheduled jobs...[/cyan]"):
+            jobs_data = client.get_user_jobs()
 
         jobs = jobs_data.get('jobs', [])
         if not jobs:
             console.print("[yellow]No scheduled jobs found[/yellow]")
+            console.print("[dim]Create a job with: create_job[/dim]")
             return
 
-        table = Table(title="Scheduler Jobs", title_style="bold cyan")
-        table.add_column("ID", style="cyan", width=15)
-        table.add_column("Name", style="white", width=30)
-        table.add_column("Next Run", style="green", width=30)
+        table = Table(title="Scheduled Jobs", title_style="bold cyan")
+        table.add_column("ID", style="cyan", width=5, justify="right")
+        table.add_column("Query", style="white", width=25)
+        table.add_column("Collection", style="blue", width=20)
+        table.add_column("Interval", style="green", width=15)
+        table.add_column("Next Run", style="yellow", width=20)
+        table.add_column("Runs", style="dim", width=8, justify="right")
 
         for job in jobs:
+            interval_desc = f"{job['interval_amount']} {job['interval_type']}{'s' if job['interval_amount'] > 1 else ''}"
+            next_run = job.get('next_run', 'N/A')
+            if next_run and next_run != 'N/A':
+                next_run = next_run[:19] if len(next_run) > 19 else next_run
+
             table.add_row(
-                job['id'],
-                job['name'],
-                job.get('next_run', 'N/A')
+                str(job['job_id']),
+                job['query'][:23] + "..." if len(job['query']) > 25 else job['query'],
+                job['collection_name'][:18] + "..." if len(job['collection_name']) > 20 else job['collection_name'],
+                interval_desc,
+                next_run,
+                str(job['run_count'])
             )
 
         console.print(table)
 
     except Exception as e:
         console.print(f"[red]Error: {e}[/red]")
+
+
+def handle_sample():
+    collection_name = prompt_collection("Collection name: ")
+    if not collection_name:
+        console.print("[red]Collection name cannot be empty[/red]")
+        return
+
+    index_input = console.input("[cyan]Document index (0-based):[/cyan] ").strip()
+    if not index_input:
+        console.print("[red]Index cannot be empty[/red]")
+        return
+
+    try:
+        index = int(index_input)
+        if index < 0:
+            console.print("[red]Index must be non-negative[/red]")
+            return
+    except ValueError:
+        console.print("[red]Index must be a number[/red]")
+        return
+
+    try:
+        with console.status(f"[cyan]Fetching document {index} from {collection_name}...[/cyan]"):
+            doc = client.get_sample_document(collection_name, index)
+
+        if not doc:
+            console.print(f"[yellow]Document at index {index} not found[/yellow]")
+            return
+
+        console.print(f"\n[bold cyan]Document at Index {index} in {collection_name}[/bold cyan]\n")
+
+        info_table = Table(show_header=False, box=None, padding=(0, 2))
+        info_table.add_column("Field", style="cyan", width=20)
+        info_table.add_column("Value", style="white", width=80)
+
+        info_table.add_row("ID:", doc.get('id', 'N/A'))
+        content = doc.get('content', '')
+        truncated_content = content[:400] + ("..." if len(content) > 400 else "")
+        info_table.add_row("Content (400 chars):", truncated_content)
+
+        console.print(info_table)
+
+        embedding = doc.get('embedding', [])
+        if embedding:
+            console.print(f"\n[bold cyan]Embedding (first 10 values):[/bold cyan]")
+            console.print(f"[dim][{', '.join(map(str, embedding[:10]))}, ...][/dim]")
+            console.print(f"[dim]Total dimensions: {len(embedding)}[/dim]\n")
+
+        metadata = doc.get('metadata', {})
+        if metadata:
+            console.print(f"[bold cyan]Metadata:[/bold cyan]")
+
+            meta_table = Table(show_header=False, box=None, padding=(0, 2))
+            meta_table.add_column("Key", style="cyan", width=20)
+            meta_table.add_column("Value", style="white", width=80)
+
+            for key, value in metadata.items():
+                meta_table.add_row(key, str(value))
+
+            console.print(meta_table)
+
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+
+
+def handle_create_job():
+    console.print("[bold cyan]Create Scheduled Job[/bold cyan]\n")
+
+    query = console.input("[cyan]Search query:[/cyan] ").strip()
+    if not query:
+        console.print("[red]Query cannot be empty[/red]")
+        return
+
+    collection = prompt_collection("Collection name (will be created if doesn't exist): ")
+    if not collection:
+        console.print("[red]Collection name cannot be empty[/red]")
+        return
+
+    try:
+        collections = client.list_collections()
+        if collection not in collections:
+            console.print(f"[yellow]Note: Collection '{collection}' doesn't exist yet. It will be created on first job run.[/yellow]")
+    except:
+        pass
+
+    interval_types = ['minute', 'hour', 'day', 'week', 'month', 'year']
+    interval_completer = WordCompleter(interval_types, ignore_case=True)
+    interval_session = PromptSession(completer=interval_completer)
+
+    console.print("\n[cyan]Available intervals: minute, hour, day, week, month, year[/cyan]")
+    console.print("[dim]Tip: Use Tab for autocomplete[/dim]\n")
+
+    while True:
+        try:
+            interval_type = interval_session.prompt("Interval type: ").strip().lower()
+            if interval_type in interval_types:
+                break
+            console.print("[red]Invalid interval type. Choose: minute, hour, day, week, month, or year[/red]")
+        except (KeyboardInterrupt, EOFError):
+            console.print("\n[yellow]Cancelled[/yellow]")
+            return
+
+    if interval_type in ['month', 'year']:
+        interval_amount = 1
+        if interval_type == 'month':
+            console.print("[dim]Job will run on the 1st of every month at midnight UTC[/dim]")
+        else:
+            console.print("[dim]Job will run on January 1st every year at midnight UTC[/dim]")
+    else:
+        while True:
+            amount_input = console.input(f"[cyan]Run every how many {interval_type}s? (1-1000):[/cyan] ").strip()
+            try:
+                interval_amount = int(amount_input)
+                if 1 <= interval_amount <= 1000:
+                    break
+                console.print("[red]Amount must be between 1 and 1000[/red]")
+            except ValueError:
+                console.print("[red]Please enter a valid number[/red]")
+
+    console.print("\n[bold cyan]Job Summary:[/bold cyan]")
+    console.print(f"  Query: [white]{query}[/white]")
+    console.print(f"  Collection: [white]{collection}[/white]")
+    if interval_type in ['month', 'year']:
+        console.print(f"  Schedule: [white]Every {interval_type}[/white]")
+    else:
+        plural = 's' if interval_amount > 1 else ''
+        console.print(f"  Schedule: [white]Every {interval_amount} {interval_type}{plural}[/white]")
+    console.print(f"  Action: [white]Run query and save results with timestamp[/white]\n")
+
+    confirm = console.input("[cyan]Create this job? (Y/n):[/cyan] ").strip().lower()
+    if confirm and confirm not in ['y', 'yes', '']:
+        console.print("[yellow]Cancelled[/yellow]")
+        return
+
+    try:
+        with console.status("[cyan]Creating job...[/cyan]"):
+            result = client.create_scheduled_job(query, collection, interval_type, interval_amount)
+
+        console.print(f"[green]✓[/green] {result['message']}")
+        console.print(f"[dim]Job ID: {result['job_id']}[/dim]")
+        console.print(f"[dim]Use 'delete_job' to remove this job[/dim]")
+
+    except Exception as e:
+        console.print(f"[red]Error creating job: {e}[/red]")
+
+
+def handle_delete_job():
+    try:
+        with console.status("[cyan]Fetching jobs...[/cyan]"):
+            jobs_data = client.get_user_jobs()
+
+        jobs = jobs_data.get('jobs', [])
+        if not jobs:
+            console.print("[yellow]No scheduled jobs found[/yellow]")
+            return
+
+        table = Table(title="Scheduled Jobs", title_style="bold cyan")
+        table.add_column("ID", style="cyan", width=5)
+        table.add_column("Query", style="white", width=30)
+        table.add_column("Collection", style="blue", width=20)
+        table.add_column("Interval", style="green", width=15)
+
+        for job in jobs:
+            interval_desc = f"{job['interval_amount']} {job['interval_type']}{'s' if job['interval_amount'] > 1 else ''}"
+            table.add_row(
+                str(job['job_id']),
+                job['query'],
+                job['collection_name'],
+                interval_desc
+            )
+
+        console.print(table)
+        console.print()
+
+        job_id_input = console.input("[cyan]Enter Job ID to delete:[/cyan] ").strip()
+        if not job_id_input:
+            console.print("[yellow]Cancelled[/yellow]")
+            return
+
+        try:
+            job_id = int(job_id_input)
+        except ValueError:
+            console.print("[red]Invalid job ID[/red]")
+            return
+
+        job_to_delete = next((j for j in jobs if j['job_id'] == job_id), None)
+        if not job_to_delete:
+            console.print(f"[red]Job ID {job_id} not found[/red]")
+            return
+
+        console.print(f"[yellow]About to delete:[/yellow]")
+        console.print(f"  Query: {job_to_delete['query']}")
+        console.print(f"  Collection: {job_to_delete['collection_name']}")
+
+        confirm = console.input("\n[red]Are you sure? (y/N):[/red] ").strip().lower()
+        if confirm not in ['y', 'yes']:
+            console.print("[yellow]Cancelled[/yellow]")
+            return
+
+        with console.status("[cyan]Deleting job...[/cyan]"):
+            result = client.delete_scheduled_job(job_id)
+
+        console.print(f"[green]✓[/green] {result['message']}")
+
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+
+
+def handle_head_index():
+    collection_name = prompt_collection("Collection name: ")
+    if not collection_name:
+        console.print("[red]Collection name cannot be empty[/red]")
+        return
+
+    try:
+        with console.status(f"[cyan]Fetching first 5 documents from {collection_name}...[/cyan]"):
+            result = client.get_head_documents(collection_name, limit=5)
+
+        documents = result.get('documents', [])
+
+        if not documents:
+            console.print(f"[yellow]Collection {collection_name} is empty[/yellow]")
+            return
+
+        console.print(f"\n[bold cyan]First {len(documents)} documents from {collection_name}[/bold cyan]\n")
+
+        docs_table = Table(show_header=True)
+        docs_table.add_column("Index", style="dim", width=6, no_wrap=True)
+        docs_table.add_column("ID", style="yellow", width=10, no_wrap=True)
+        docs_table.add_column("Date", style="cyan", width=20, no_wrap=True)
+        docs_table.add_column("Content", style="white", width=75)
+
+        for doc in documents:
+            index_str = str(doc['index'])
+            doc_id = doc['id']
+            date_str = doc.get('metadata', {}).get('date', 'N/A')
+            content = doc.get('content', '')
+            truncated = content[:200] if len(content) > 200 else content
+            docs_table.add_row(index_str, doc_id, date_str, truncated)
+
+        console.print(docs_table)
+
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+
+
+def handle_tail_index():
+    collection_name = prompt_collection("Collection name: ")
+    if not collection_name:
+        console.print("[red]Collection name cannot be empty[/red]")
+        return
+
+    try:
+        with console.status(f"[cyan]Fetching last 5 documents from {collection_name}...[/cyan]"):
+            result = client.get_tail_documents(collection_name, limit=5)
+
+        documents = result.get('documents', [])
+
+        if not documents:
+            console.print(f"[yellow]Collection {collection_name} is empty[/yellow]")
+            return
+
+        console.print(f"\n[bold cyan]Last {len(documents)} documents from {collection_name}[/bold cyan]\n")
+
+        docs_table = Table(show_header=True)
+        docs_table.add_column("Index", style="dim", width=6, no_wrap=True)
+        docs_table.add_column("ID", style="yellow", width=10, no_wrap=True)
+        docs_table.add_column("Date", style="cyan", width=20, no_wrap=True)
+        docs_table.add_column("Content", style="white", width=75)
+
+        for doc in documents:
+            index_str = str(doc['index'])
+            doc_id = doc['id']
+            date_str = doc.get('metadata', {}).get('date', 'N/A')
+            content = doc.get('content', '')
+            truncated = content[:200] if len(content) > 200 else content
+            docs_table.add_row(index_str, doc_id, date_str, truncated)
+
+        console.print(docs_table)
+
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+
+def handle_change_emb_model():
+    import os
+    from pathlib import Path
+
+    console.print("\n[bold cyan]═══ Change Embedding Model ═══[/bold cyan]\n")
+
+    env_path = Path(".env")
+    if not env_path.exists():
+        console.print("[red]Error: .env file not found[/red]")
+        return
+
+    current_model = os.getenv("HF_EMB_MODEL", "google/embeddinggemma-300m")
+
+    console.print(f"[cyan]Current model:[/cyan] {current_model}\n")
+
+    console.print("[yellow]About Embedding Models:[/yellow]")
+    console.print("  • Embedding models convert text to vectors for similarity search")
+    console.print("  • Popular models:")
+    console.print("    - all-MiniLM-L6-v2 (fast, 384 dims)")
+    console.print("    - google/embeddinggemma-300m (high quality, 768 dims)")
+    console.print("    - BAAI/bge-small-en-v1.5 (good balance, 384 dims)")
+    console.print("  • Find models at: https://huggingface.co/models?pipeline_tag=sentence-similarity\n")
+
+    new_model = console.input("[cyan]Enter new model name (or press Enter to cancel):[/cyan] ").strip()
+
+    if not new_model:
+        console.print("[yellow]Cancelled[/yellow]")
+        return
+
+    try:
+        env_content = env_path.read_text()
+        lines = env_content.split('\n')
+        updated = False
+
+        for i, line in enumerate(lines):
+            if line.startswith('HF_EMB_MODEL=') or line.startswith('# HF_EMB_MODEL='):
+                lines[i] = f'HF_EMB_MODEL="{new_model}"'
+                updated = True
+                break
+
+        if not updated:
+            lines.append(f'HF_EMB_MODEL="{new_model}"')
+
+        env_path.write_text('\n'.join(lines))
+
+        console.print(f"\n[green]✓ Updated HF_EMB_MODEL to:[/green] {new_model}")
+        console.print("\n[yellow]⚠ IMPORTANT - Next Steps:[/yellow]")
+        console.print("  1. Exit this CLI with: [cyan]shutdown[/cyan]")
+        console.print("  2. Restart the CLI: [cyan]uv run ragy[/cyan]")
+        console.print("  3. The new embedding model will be loaded on startup")
+        console.print("\n[dim]Note: All existing indexes were created with the old model.")
+        console.print("You may want to recreate indexes for consistency.[/dim]\n")
+
+    except Exception as e:
+        console.print(f"[red]Error updating .env file: {e}[/red]")
+
+def _fetch_xray_data(query: str, collection_name: str) -> dict | None:
+    try:
+        with console.status(f"[cyan]Analyzing {collection_name}...[/cyan]"):
+            return client.extract_all_for_xray(query, collection_name)
+    except Exception as e:
+        console.print(f"[red]Error fetching data from {collection_name}: {e}[/red]")
+        return None
+
+def _prepare_timeline_data(results: list, top_k: int) -> dict | None:
+    from datetime import datetime
+    if not results:
+        return None
+    top_results = sorted(results, key=lambda x: x['score'], reverse=True)[:top_k]
+    top_dates = {r['date'] for r in top_results}
+    results_sorted = sorted(results, key=lambda x: x['date'])
+    dates = [r['date'] for r in results_sorted]
+    scores = [r['score'] if r['date'] in top_dates else 0 for r in results_sorted]
+    date_objs = []
+    for d in dates:
+        try:
+            date_str = d[:10] if len(d) >= 10 else d
+            date_objs.append(datetime.strptime(date_str, '%Y-%m-%d'))
+        except Exception as e:
+            console.print(f"[red]Error parsing date '{d}': {e}[/red]")
+            continue
+    if not date_objs:
+        return None
+    start_date = date_objs[0]
+    x_values = [(d - start_date).days for d in date_objs]
+    return {
+        'dates': dates,
+        'scores': scores,
+        'x_values': x_values,
+        'top_results': top_results
+    }
+
+def _plot_timeline(timeline_data: dict, collection_name: str):
+    import plotext as plt
+    dates = timeline_data['dates']
+    scores = timeline_data['scores']
+    x_values = timeline_data['x_values']
+    plt.clear_figure()
+    plt.plot(x_values, scores, color='red')
+    num_labels = min(8, len(dates))
+    if num_labels > 0:
+        step = max(1, len(dates) // num_labels)
+        label_indices = list(range(0, len(dates), step))
+        if label_indices[-1] != len(dates) - 1:
+            label_indices.append(len(dates) - 1)
+        x_labels = [dates[i] for i in label_indices]
+        x_coords = [x_values[i] for i in label_indices]
+        plt.xticks(x_coords, x_labels)
+    plt.title(f"Collection: {collection_name}")
+    plt.xlabel("Timeline (Dates)")
+    plt.ylabel("Similarity Score")
+    plt.plot_size(width=None, height=15)
+    plt.show()
+
+def _display_results_table(top_results: list, query: str, top_k: int, collection_name: str):
+    console.print(f"\n[bold cyan]Top {top_k} Results from {collection_name}[/bold cyan]\n")
+    table = Table(title=f"Query: {query}", title_style="bold cyan")
+    table.add_column("Date", style="cyan", width=12)
+    table.add_column("Score", style="green", width=8)
+    table.add_column("Content", style="white", width=80)
+    for r in top_results:
+        date_display = r['date'][:10] if len(r['date']) >= 10 else r['date']
+        table.add_row(
+            date_display,
+            f"{r['score']:.3f}",
+            r['content'][:78] + "..." if len(r['content']) > 80 else r['content']
+        )
+    console.print(table)
+
+def handle_xray():
+    collection = prompt_collection("Collection (leave empty for all): ")
+    query = console.input("[cyan]Query:[/cyan] ").strip()
+    if not query:
+        console.print("[red]Query cannot be empty[/red]")
+        return
+    top_k_input = console.input("[cyan]Top K (default 10):[/cyan] ").strip()
+    top_k = int(top_k_input) if top_k_input else 10
+    if not collection:
+        try:
+            collections = client.list_collections()
+            if not collections:
+                console.print("[yellow]No collections found in database[/yellow]")
+                return
+            console.print(f"[cyan]Processing all {len(collections)} collections (plots only)...[/cyan]\n")
+        except Exception as e:
+            console.print(f"[red]Error listing collections: {e}[/red]")
+            return
+        show_tables = False
+    else:
+        collections = [collection]
+        show_tables = True
+    for col_name in collections:
+        data = _fetch_xray_data(query, col_name)
+        if not data:
+            continue
+        results = data.get('results', [])
+        if not results:
+            console.print(f"[yellow]No results found in {col_name}[/yellow]\n")
+            continue
+        timeline_data = _prepare_timeline_data(results, top_k)
+        if not timeline_data:
+            console.print(f"[yellow]No valid dates in {col_name}[/yellow]\n")
+            continue
+        _plot_timeline(timeline_data, col_name)
+        if show_tables:
+            _display_results_table(timeline_data['top_results'], query, top_k, col_name)
+        console.print()

@@ -29,7 +29,7 @@ def web_search(query: str) -> dict:
         formatted_results.append({
             "title": result.get('title', 'No title'),
             "url": result.get('url', 'N/A'),
-            "content": result.get('content', 'No content')
+            "raw_content": result.get('raw_content') or result.get('content', 'No content')
         })
 
     return {"query": query, "results": formatted_results}

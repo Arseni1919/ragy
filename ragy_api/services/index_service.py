@@ -8,7 +8,7 @@ from conn_db.client import client as db_client
 from .search_service import search_with_retry
 
 
-def process_day(query: str, day_date: str, save_full_data: bool) -> tuple[str, dict, list[float], dict]:
+def process_day(query: str, day_date: str, index: int) -> tuple[str, dict, list[float], dict]:
     query_with_date = f"{query} {day_date}"
 
     response = search_with_retry(query_with_date)
@@ -17,26 +17,23 @@ def process_day(query: str, day_date: str, save_full_data: bool) -> tuple[str, d
         return None
 
     first_result = response['results'][0]
-    content = first_result.get('content', '') or first_result.get('raw_content', '')
+    content = first_result.get('raw_content') or first_result.get('content', '')
 
     if not content:
         return None
 
     embedding = get_document_embedding(content)
 
-    doc_id = f"{day_date}"
+    doc_id = str(index)
 
-    if save_full_data:
-        document = content
-        metadata = {
-            "date": day_date,
-            "url": first_result.get('url', ''),
-            "title": first_result.get('title', ''),
-            "score": first_result.get('score', 0.0)
-        }
-    else:
-        document = day_date
-        metadata = {"date": day_date}
+    document = content
+    metadata = {
+        "date": day_date,
+        "url": first_result.get('url') or '',
+        "title": first_result.get('title') or '',
+        "score": first_result.get('score', 0.0),
+        "query": query
+    }
 
     return doc_id, document, embedding, metadata
 
@@ -44,7 +41,6 @@ def process_day(query: str, day_date: str, save_full_data: bool) -> tuple[str, d
 def create_index(
     query: str,
     collection_name: str,
-    save_full_data: bool = True,
     num_days: int = 365,
     max_concurrent: int = 10
 ) -> Generator[dict, None, None]:
@@ -62,8 +58,8 @@ def create_index(
 
         with ThreadPoolExecutor(max_workers=max_concurrent) as executor:
             futures = {
-                executor.submit(process_day, query, day_date, save_full_data): day_date
-                for day_date in dates
+                executor.submit(process_day, query, day_date, idx): day_date
+                for idx, day_date in enumerate(dates)
             }
 
             for future in as_completed(futures):

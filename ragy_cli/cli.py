@@ -18,6 +18,13 @@ from ragy_cli.handlers import (
     handle_health,
     handle_info,
     handle_jobs,
+    handle_create_job,
+    handle_delete_job,
+    handle_sample,
+    handle_head_index,
+    handle_tail_index,
+    handle_change_emb_model,
+    handle_xray,
 )
 
 
@@ -164,14 +171,21 @@ def main():
     handlers = {
         "search": handle_search,
         "extract": handle_extract,
-        "create": handle_create,
+        "create_index": handle_create,
         "list": handle_list,
         "stats": handle_stats,
         "status": handle_status,
-        "delete": handle_delete,
+        "delete_index": handle_delete,
         "health": handle_health,
         "info": handle_info,
         "jobs": handle_jobs,
+        "create_job": handle_create_job,
+        "delete_job": handle_delete_job,
+        "sample": handle_sample,
+        "head_index": handle_head_index,
+        "tail_index": handle_tail_index,
+        "change_emb": handle_change_emb_model,
+        "xray": handle_xray,
     }
 
     while True:
