@@ -1,10 +1,13 @@
 import requests
 from typing import Generator
 import json
+from ragy_api.config import settings
 
 
 class APIClient:
-    def __init__(self, base_url: str = "http://localhost:8000"):
+    def __init__(self, base_url: str | None = None):
+        if base_url is None:
+            base_url = f"http://localhost:{settings.API_PORT}"
         self.base_url = base_url
         self.api_prefix = "/api/v1"
 

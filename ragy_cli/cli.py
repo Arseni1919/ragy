@@ -4,6 +4,7 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import WordCompleter
 from rich.console import Console
 from rich.table import Table
+from ragy_api.config import settings
 from ragy_cli.constants import ASCII_LOGO, SUBTITLE
 from ragy_cli.commands import COMMANDS, COMMAND_MAP
 from ragy_cli.handlers import (
@@ -30,14 +31,14 @@ def ensure_api_running() -> bool:
 
     try:
         client.health_check()
-        console.print("[dim]API server is already running[/dim]\n")
+        console.print(f"[dim]API server is already running on port {settings.API_PORT}[/dim]\n")
         return True
     except:
         pass
 
     console.print("[yellow]API server is not running.[/yellow]")
     console.print("[cyan]To start API server in background, the following command will be executed:[/cyan]")
-    console.print("  [dim]uvicorn ragy_api.main:app --host 0.0.0.0 --port 8000[/dim]")
+    console.print(f"  [dim]uvicorn ragy_api.main:app --host {settings.API_HOST} --port {settings.API_PORT}[/dim]")
     console.print("[cyan]To stop it later, use:[/cyan]")
     console.print("  [dim]pkill -f 'uvicorn ragy_api.main:app'[/dim]")
     console.print()
@@ -52,7 +53,7 @@ def ensure_api_running() -> bool:
 
     try:
         subprocess.Popen(
-            ["uvicorn", "ragy_api.main:app", "--host", "0.0.0.0", "--port", "8000"],
+            ["uvicorn", "ragy_api.main:app", "--host", settings.API_HOST, "--port", str(settings.API_PORT)],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             start_new_session=True
