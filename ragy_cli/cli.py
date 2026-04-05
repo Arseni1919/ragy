@@ -63,7 +63,7 @@ def ensure_api_running() -> bool:
             time.sleep(1)
             try:
                 client.health_check()
-                console.print("[green]✓[/green] API server started\n")
+                console.print(f"[green]✓[/green] API server started on port {settings.API_PORT}\n")
                 return True
             except:
                 continue
