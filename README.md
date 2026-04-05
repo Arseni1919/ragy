@@ -1,11 +1,7 @@
 <div align="center">
 
 
-![RAGY Banner](docs/screenshots/banner.png)
-
-# RAGY
-
-**OS for Your RAG**
+![RAGY](docs/screenshots/banner.png)
 
 
 [![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/)
