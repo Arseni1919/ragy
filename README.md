@@ -8,9 +8,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![GitHub](https://img.shields.io/badge/github-Arseni1919%2Fragy-blue)](https://github.com/Arseni1919/ragy)
 
-*Operating system for your RAG time series database. Build temporal vector indices, analyze patterns across collections and time, schedule background jobs, and perform semantic retrieval with powerful visualization tools.*
-
-**About the Name:** RAGY is inspired by "RAG a Year" — the concept of indexing a full time period once (a year, a month, or any range), then sampling relevant days through semantic similarity instead of recollecting all data for every new query.
+Most RAG systems are stateless. Every query re-fetches, re-embeds, re-ranks. ragy is different: build a temporal vector index once for any query and time window, then use semantic similarity to retrieve the right days — not all days. Like having a searchable memory of everything that happened.
 
 </div>
 
