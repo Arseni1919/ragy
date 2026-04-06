@@ -1,327 +1,54 @@
 <div align="center">
 
-
 ![RAGY](docs/screenshots/banner.png)
-
 
 [![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![GitHub](https://img.shields.io/badge/github-Arseni1919%2Fragy-blue)](https://github.com/Arseni1919/ragy)
 
-Most RAG systems are stateless. Every query re-fetches, re-embeds, re-ranks. ragy is different: build a temporal vector index once for any query and time window, then use semantic similarity to retrieve the right days — not all days. Like having a searchable memory of everything that happened.
+**Most RAG systems are stateless. Every query re-fetches, re-embeds, re-ranks.**
+
+ragy is different: index any topic across a full time window *once*, then use semantic similarity to retrieve the right days — not all days. Temporal memory for your AI agents, financial research, and knowledge workflows.
 
 </div>
 
 ---
 
-## 📋 Table of Contents
+## Why ragy?
 
-- [Quick Start](#-quick-start)
-- [Installation](#-installation)
-- [CLI Commands](#-cli-commands)
-- [API Endpoints](#-api-endpoints)
-- [Usage Examples](#-usage-examples)
-- [MCP Integration](#-mcp-integration)
-- [Project Structure](#-project-structure)
-- [Architecture](#-architecture)
-- [Contributing](#-contributing)
+Standard RAG retrieves documents. ragy retrieves *moments in time*.
 
----
+You define a query (e.g. `"Fed interest rate signals"`) and a time window (e.g. 365 days). ragy fetches and embeds every day's content once, stores it in a local vector database, and lets you instantly answer: **"which days in the past year most resembled this?"** — ranked by cosine similarity, plotted on a timeline.
 
-## 🚀 Quick Start
+**Key difference from other RAG projects:**
 
-
-![CLI Interface](docs/screenshots/cli-interface.png)
-
-### One-Command Installation
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/Arseni1919/ragy/main/install.sh | bash
-```
-
-### Quick Setup
-
-1. **Configure API keys** in `.env`
-2. **Start the API**: `uv run uvicorn ragy_api.main:app --reload`
-3. **Launch CLI**: `uv run ragy`
-
-**💡 Tip:** With fast internet, you can run the CLI immediately. Embedding models (~80MB) download automatically in the background. The first query may take 10-30 seconds while models load.
+| | Standard RAG | ragy |
+|---|---|---|
+| Data model | Documents | Days in time |
+| Re-fetch per query? | Yes | No — indexed once |
+| Time-aware? | No | Yes — date is a first-class dimension |
+| Visualization | None | Similarity timeline (`xray`) |
+| Scheduling | Manual | Built-in APScheduler |
+| Agent integration | Varies | Native MCP server |
 
 ---
 
-## 📦 Installation
+## What You Can Build
 
-### Prerequisites
+**📈 Financial research** — Index a year of market news, query `"Fed pivot signals"`, get back the 10 most semantically similar trading days with similarity scores on a timeline.
 
-- Python 3.12+
-- [uv](https://github.com/astral-sh/uv) package manager
+**🔍 Competitive intelligence** — Schedule daily indexing of topics. Ask "what weeks had the most activity around X?" Retrieve content ranked by relevance, not recency.
 
-### Step-by-Step Installation
-
-**1. Clone the repository**
-
-```bash
-git clone https://github.com/Arseni1919/ragy.git
-cd ragy
-```
-
-**2. Install dependencies**
-
-```bash
-uv sync
-```
-
-**3. Configure environment**
-
-Create a `.env` file:
-
-```bash
-# Required API Key (ONLY this one is needed to run RAGY)
-TAVILY_API_KEY="your-tavily-api-key"
-
-# Optional Configuration (defaults shown)
-HF_EMB_MODEL="all-MiniLM-L6-v2"
-DB_PATH="./ragy_db"
-RAGY_MAX_CONCURRENT=10
-API_HOST="0.0.0.0"
-API_PORT=8000
-SCHEDULER_ENABLED=true
-SCHEDULER_HOUR=2
-SCHEDULER_TIMEZONE="UTC"
-JOBS_DB_PATH="./ragy_jobs.db"
-```
-
-**⚠️ IMPORTANT:** Only **TAVILY_API_KEY** is required to run RAGY. Get your free API key at [tavily.com](https://tavily.com/).
-
-**4. Start the API server**
-
-Development mode (with auto-reload):
-```bash
-uv run uvicorn ragy_api.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-Production mode (with multiple workers):
-```bash
-uv run uvicorn ragy_api.main:app --workers 4 --host 0.0.0.0 --port 8000
-```
-
-**5. Launch the CLI**
-
-```bash
-uv run ragy
-```
-
-The CLI automatically checks if the API is running and offers to start it if needed.
-
-**💡 First Run Note:** With fast internet, you can start immediately. Embedding models (~80MB) download automatically in the background on first use. The initial startup may take up to 60 seconds while models download and load. Subsequent runs are instant (models are cached).
-
-**6. Access API documentation**
-
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-- **Health Check**: http://localhost:8000/api/v1/system/health
+**🤖 AI agent long-term memory** — Give your Claude / LangGraph / n8n agent a persistent temporal knowledge base via MCP. No search API call on every turn — just semantic retrieval from your local index.
 
 ---
 
-## 💻 CLI Commands
+## See It in Action
 
-Complete reference of all 21 interactive commands:
-
-### Index Management
-
-| Command | Description | Usage |
-|---------|-------------|-------|
-| `create_index` | Create temporal vector index | Creates time series index for specified query |
-| `delete_index` | Delete a collection | Removes collection with confirmation |
-| `upload_csv` | Upload CSV to collection | Bulk import from CSV file (drag & drop supported) |
-
-### Query & Extract
-
-| Command | Description | Usage |
-|---------|-------------|-------|
-| `extract` | Extract relevant days | Vector similarity search with top-K results |
-| `search` | Search the web | Web search using Tavily API |
-
-### Browse
-
-| Command | Description | Usage |
-|---------|-------------|-------|
-| `list` | List all collections | Shows all available collections |
-| `status` | Check collection status | Display collection document count |
-| `sample` | Inspect a document | View specific document by index |
-| `head_index` | Show first 5 documents | Preview collection start |
-| `tail_index` | Show last 5 documents | Preview collection end |
-
-### Analysis
-
-| Command | Description | Usage |
-|---------|-------------|-------|
-| `stats` | Show database statistics | Comprehensive database overview |
-| `xray` | Visualize similarity timeline | Plot similarity scores over time |
-
-### Scheduling
-
-| Command | Description | Usage |
-|---------|-------------|-------|
-| `jobs` | List scheduled jobs | Show all recurring jobs |
-| `create_job` | Create scheduled job | Set up automatic updates |
-| `delete_job` | Delete scheduled job | Remove recurring job |
-
-### System
-
-| Command | Description | Usage |
-|---------|-------------|-------|
-| `health` | API health check | Verify system status |
-| `info` | Embedding model info | Show model details |
-| `change_emb` | Change embedding model | Update model in .env |
-| `help` | Show help | Display command list |
-| `exit` | Exit CLI | Close application (alias: `quit`) |
-| `shutdown` | Exit and stop API | Close CLI and stop background API |
-
----
-
-## 🔌 API Endpoints
-
-Complete reference of all 19 REST API endpoints:
-
-### Search
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/v1/search/web` | Execute web search with query |
-
-### Extract
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/v1/extract/collections` | List all available collections |
-| `POST` | `/api/v1/extract/data` | Extract relevant data (SSE streaming) |
-| `POST` | `/api/v1/extract/all` | Get all documents with similarity scores |
-
-### Index
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/v1/index/create` | Create temporal index (SSE streaming) |
-| `GET` | `/api/v1/index/status/{name}` | Get index creation status |
-
-### Database
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/v1/database/content` | List all collections in database |
-| `GET` | `/api/v1/database/stats` | Get comprehensive database statistics |
-| `GET` | `/api/v1/database/collection/{name}/distribution` | Get date distribution for collection |
-| `GET` | `/api/v1/database/collection/{name}/sample/{index}` | Get specific document by index |
-| `GET` | `/api/v1/database/collection/{name}/head` | Get first N documents |
-| `GET` | `/api/v1/database/collection/{name}/tail` | Get last N documents |
-| `GET` | `/api/v1/database/collection/{name}` | Get collection details |
-| `DELETE` | `/api/v1/database/collection/{name}` | Delete collection |
-
-### System
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/v1/system/health` | Health check (database, embedding, scheduler) |
-| `GET` | `/api/v1/system/embedding/info` | Get embedding model information |
-| `POST` | `/api/v1/system/embedding/encode` | Encode text to embedding vector |
-| `GET` | `/api/v1/system/scheduler/jobs` | List all scheduled jobs |
-| `POST` | `/api/v1/system/scheduler/trigger` | Manually trigger scheduler update |
-| `POST` | `/api/v1/system/scheduler/jobs/create` | Create new scheduled job |
-| `GET` | `/api/v1/system/scheduler/jobs/user` | Get user-created jobs |
-| `DELETE` | `/api/v1/system/scheduler/jobs/delete/{job_id}` | Delete scheduled job |
-
-### Upload
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/v1/upload/csv` | Upload and import CSV file |
-
----
-
-## 📚 Usage Examples
-
-### Example 1: Create Your First Index
-
-**CLI:**
-```bash
-ragy> create_index
-Query: artificial intelligence news
-Collection name: ai_2024
-Number of days: 365
-```
-
-**API:**
-```bash
-curl -N -X POST http://localhost:8000/api/v1/index/create \
-  -H "Content-Type: application/json" \
-  -d '{
-    "query": "artificial intelligence news",
-    "collection_name": "ai_2024",
-    "num_days": 90,
-    "save_full_data": true
-  }'
-```
-
----
-
-### Example 2: Search and Extract Data
-
-**Search the web:**
-```bash
-ragy> search
-Query: latest machine learning breakthroughs
-```
-
-**Extract from collection:**
-```bash
-ragy> extract
-Collection: ai_2024
-Query: transformer models
-Top K: 5
-```
-
-**API equivalent:**
-```bash
-curl -X POST http://localhost:8000/api/v1/extract/all \
-  -H "Content-Type: application/json" \
-  -d '{
-    "query": "transformer models",
-    "collection_name": "ai_2024",
-    "top_k": 5
-  }'
-```
-
----
-
-### Example 3: Upload CSV Data
-
-**CLI (with drag & drop):**
-```bash
-ragy> upload_csv
-CSV file path (drag file here): /path/to/data.csv
-Collection name: stock_data
-✓ Uploaded 1000 documents to 'stock_data'
-```
-
-**CSV format:**
-```csv
-date,content,title,url
-2024-01-15,Article about AI developments,AI News,https://example.com
-2024-01-16,Stock market analysis,Market Update,https://example.com
-```
-
-Required columns: `date`, `content`
-Optional columns: Any additional columns stored as metadata
-
----
-
-### Example 4: Visualize with Xray
-
+### The `xray` command — your temporal similarity radar
 
 ![Xray Timeline](docs/screenshots/xray-timeline.png)
 
-**CLI:**
 ```bash
 ragy> xray
 Collection: Stock_JNJ
@@ -329,79 +56,177 @@ Query: high price expected
 Top K: 10
 ```
 
-Displays:
-- Timeline plot of similarity scores
-- Top K results table with dates and content
+Returns a ranked list of dates with similarity scores, plotted on a timeline. This is the fastest way to understand *when* your topic was most relevant.
 
 ---
 
-### Example 5: Schedule Automatic Updates
+## Quick Start
 
-**CLI:**
+### One-command install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Arseni1919/ragy/main/install.sh | bash
+```
+
+### Manual setup
+
+```bash
+git clone https://github.com/Arseni1919/ragy.git
+cd ragy
+uv sync
+```
+
+Create a `.env` file — only one key is required:
+
+```bash
+TAVILY_API_KEY="your-key-here"   # Get free at tavily.com
+```
+
+Start the stack:
+
+```bash
+# Terminal 1 — API
+uv run uvicorn ragy_api.main:app --reload
+
+# Terminal 2 — CLI
+uv run ragy
+```
+
+**First run note:** embedding models (~80MB) download automatically in the background. First query may take 10–30 seconds; subsequent runs are instant.
+
+---
+
+## Core Workflow
+
+### 1. Index a topic over time
+
+```bash
+ragy> create_index
+Query: artificial intelligence news
+Collection name: ai_2024
+Number of days: 365
+```
+
+This fetches, embeds, and stores one entry per day for the past 365 days. Run once. Query forever.
+
+### 2. Retrieve semantically relevant days
+
+```bash
+ragy> extract
+Collection: ai_2024
+Query: transformer architecture improvements
+Top K: 5
+```
+
+Returns the 5 days most semantically similar to your query — not keyword matches, not most recent, but most *relevant*.
+
+### 3. Visualize similarity over time
+
+```bash
+ragy> xray
+Collection: ai_2024
+Query: open source model releases
+Top K: 10
+```
+
+Plots similarity scores as a timeline. Instantly see if your topic had a spike, a gradual trend, or scattered activity.
+
+### 4. Schedule automatic updates
+
 ```bash
 ragy> create_job
 Query: tech news
 Collection name: daily_tech
-Interval type (daily/hourly/weekly): daily
-Interval amount: 1
+Interval type: daily
 ```
 
-**API:**
-```bash
-curl -X POST http://localhost:8000/api/v1/system/scheduler/jobs/create \
-  -H "Content-Type: application/json" \
-  -d '{
-    "query": "tech news",
-    "collection_name": "daily_tech",
-    "interval_type": "daily",
-    "interval_amount": 1
-  }'
-```
+ragy updates your collection every day at the scheduled hour. Your index stays current without manual work.
 
 ---
 
-### Example 6: View Database Statistics
+## CLI Reference
 
+21 commands across 5 categories:
 
-![Database Stats](docs/screenshots/stats.png)
+### Index Management
+| Command | Description |
+|---------|-------------|
+| `create_index` | Build temporal vector index for a query + time window |
+| `delete_index` | Remove a collection |
+| `upload_csv` | Import from CSV (`date`, `content` columns required) |
 
-**CLI:**
-```bash
-ragy> stats
-```
+### Query & Extract
+| Command | Description |
+|---------|-------------|
+| `extract` | Retrieve top-K days by semantic similarity |
+| `search` | Live web search via Tavily |
 
-Shows:
-- Total documents across all collections
-- Collection names and document counts
-- Date ranges for each collection
+### Inspect
+| Command | Description |
+|---------|-------------|
+| `list` | All collections |
+| `status` | Document count for a collection |
+| `sample` | Inspect a single document by index |
+| `head_index` / `tail_index` | Preview first / last 5 documents |
+| `stats` | Full database overview |
+| `xray` | Similarity timeline plot |
+
+### Scheduling
+| Command | Description |
+|---------|-------------|
+| `jobs` | List scheduled jobs |
+| `create_job` | Set up recurring index updates |
+| `delete_job` | Remove a job |
+
+### System
+| Command | Description |
+|---------|-------------|
+| `health` | API health check |
+| `info` | Embedding model details |
+| `change_emb` | Swap embedding model |
+| `help` / `exit` / `shutdown` | Utility commands |
 
 ---
 
-## 🤖 MCP Integration
+## REST API
 
-RAGY exposes its API through the Model Context Protocol (MCP), allowing AI agents like Claude to interact with your RAG system.
+19 endpoints. Full Swagger UI at `http://localhost:8000/docs`.
 
-### Available MCP Tools
+| Category | Key Endpoints |
+|----------|--------------|
+| **Index** | `POST /api/v1/index/create` (SSE streaming) |
+| **Extract** | `POST /api/v1/extract/data` · `POST /api/v1/extract/all` |
+| **Database** | `GET /api/v1/database/stats` · `GET /api/v1/database/collection/{name}/distribution` |
+| **Search** | `POST /api/v1/search/web` |
+| **Scheduler** | `POST /api/v1/system/scheduler/jobs/create` |
+| **Upload** | `POST /api/v1/upload/csv` |
 
-- `list_collections` - List all database collections
-- `search_web` - Search the web using Tavily API
-- `extract_all` - Extract relevant documents by similarity
-- `get_database_stats` - Get database statistics
-- `health_check` - Check API server health
+---
 
-### Setup for Claude Desktop
+## MCP Integration
 
-**1. Start the API server** (required for MCP):
+ragy ships a native MCP server, letting Claude Desktop (and any MCP-compatible agent) query your temporal knowledge base directly.
+
+### Available tools
+
+| Tool | Description |
+|------|-------------|
+| `list_collections` | See all indexed topics |
+| `extract_all` | Retrieve relevant days by semantic similarity |
+| `search_web` | Live web search via Tavily |
+| `get_database_stats` | Database overview |
+| `health_check` | API status |
+
+### Setup
+
+**1. Start the API:**
 ```bash
 uv run uvicorn ragy_api.main:app --host 0.0.0.0 --port 8000
 ```
 
-**2. Configure Claude Desktop**
+**2. Add to `claude_desktop_config.json`:**
 
-Edit your `claude_desktop_config.json`:
-
-**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
 ```json
 {
@@ -415,174 +240,129 @@ Edit your `claude_desktop_config.json`:
 }
 ```
 
-**3. Restart Claude Desktop**
-
-**4. Use the tools**
-
-Ask Claude:
-- "List all my RAG collections"
-- "Search the web for recent AI news"
-- "Show me database statistics"
-- "Extract documents about machine learning from the ai_2024 collection"
-
-
-### Testing MCP Server
-
-```bash
-uv run ragy-mcp
-```
-
-The server communicates via stdio and requires the FastAPI backend on `localhost:8000`.
+**3. Ask Claude:**
+- *"Which days in my ai_2024 collection are most similar to 'GPT-4 level breakthroughs'?"*
+- *"Show me database stats"*
+- *"Search the web for recent LLM benchmark results"*
 
 ---
 
-## 📁 Project Structure
-
-```
-RAGY/
-├── ragy_api/              # FastAPI backend
-│   ├── main.py            # Application entry point
-│   ├── config.py          # Environment configuration
-│   ├── models.py          # Pydantic models
-│   ├── scheduler.py       # APScheduler for daily updates
-│   ├── services/          # Business logic
-│   │   ├── search_service.py
-│   │   ├── index_service.py
-│   │   ├── extract_service.py
-│   │   └── database_service.py
-│   └── routers/           # API endpoints
-│       ├── search.py
-│       ├── extract.py
-│       ├── index.py
-│       ├── database.py
-│       ├── system.py
-│       └── upload.py
-│
-├── ragy_cli/              # CLI client
-│   ├── cli.py             # Main entry point
-│   ├── constants.py       # ASCII logo and branding
-│   ├── commands.py        # Command definitions
-│   ├── api_client.py      # HTTP client wrapper
-│   └── handlers.py        # Command handlers
-│
-├── ragy_mcp/              # MCP server
-│   ├── __init__.py
-│   └── server.py          # MCP tools (5 core tools)
-│
-├── conn_db/               # ChromaDB connection
-│   └── client.py
-│
-├── conn_emb_hugging_face/ # Hugging Face embeddings
-│   └── client.py
-│
-├── conn_emb_ollama/       # Ollama embeddings (alternative)
-│   └── client.py
-│
-├── conn_tavily/           # Tavily search API
-│   └── client.py
-│
-├── conn_bright_data/      # Bright Data API (future)
-│   └── client.py
-│
-├── sample_data/           # Sample datasets
-│   └── load_data.py
-│
-├── pyproject.toml         # Dependencies and entry points
-├── .env                   # Environment configuration
-└── README.md              # This file
-```
-
----
-
-## 🏗 Architecture
+## Architecture
 
 ```mermaid
 graph TD
-    A[ChromaDB] --> B[FastAPI Backend]
-    C[Embeddings<br/>HuggingFace/Ollama] --> B
-    D[Search Engine<br/>Tavily/Bright Data] --> B
+    D[Search Engine<br/>Tavily / Bright Data] -->|fetch + index| B
+    C[Embeddings<br/>HuggingFace / Ollama] -->|encode| B
+    A[ChromaDB<br/>local vector store] <-->|store / retrieve| B[FastAPI Backend]
     B --> E[CLI Client]
     B --> F[MCP Server]
-    B --> G[HTTP Clients]
+    B --> G[HTTP / REST]
+    H[APScheduler] -->|daily update| B
 
     style B fill:#0066FF,color:#fff
     style E fill:#00DDFF,color:#000
     style F fill:#00DDFF,color:#000
-    style G fill:#00DDFF,color:#000
 ```
 
-### Component Overview
+**Data flows:**
+1. **Index**: Tavily → FastAPI → Embeddings → ChromaDB (runs once)
+2. **Query**: CLI / MCP / HTTP → FastAPI → Embeddings → ChromaDB → ranked results
+3. **Schedule**: APScheduler → FastAPI → Tavily → ChromaDB (runs daily)
 
-| Component | Description | Technology |
-|-----------|-------------|------------|
-| **ChromaDB** | Vector database for document storage and similarity search | ChromaDB |
-| **Embeddings** | Text encoding to vector representations | Sentence Transformers (HuggingFace) |
-| **Search Engine** | Web search for data collection | Tavily API |
-| **FastAPI Backend** | Central API with 19 REST endpoints | FastAPI, Python 3.12+ |
-| **CLI Client** | Interactive terminal interface (21 commands) | Rich, Prompt Toolkit |
-| **MCP Server** | Model Context Protocol for AI agents | MCP Python SDK |
-| **HTTP Clients** | Direct API access via curl/requests | Standard HTTP |
-
-### Data Flow
-
-1. **Index Creation**: Search Engine → FastAPI → Embeddings → ChromaDB
-2. **Query**: CLI/MCP → FastAPI → Embeddings → ChromaDB → Results
-3. **Scheduling**: APScheduler → FastAPI → Search Engine → ChromaDB
+All processing is local. Only Tavily calls go to the network.
 
 ---
 
-## 🤝 Contributing
+## Configuration
 
-We welcome contributions! Here's how you can help:
+```bash
+# Required
+TAVILY_API_KEY="..."           # Only external dependency
 
-### Development Setup
+# Optional — sensible defaults shown
+HF_EMB_MODEL="all-MiniLM-L6-v2"
+DB_PATH="./ragy_db"
+RAGY_MAX_CONCURRENT=10
+API_HOST="0.0.0.0"
+API_PORT=8000
+SCHEDULER_ENABLED=true
+SCHEDULER_HOUR=2               # Daily update hour (UTC)
+SCHEDULER_TIMEZONE="UTC"
+JOBS_DB_PATH="./ragy_jobs.db"
+```
 
-1. Fork the repository
-2. Clone your fork: `git clone https://github.com/Arseni1919/ragy.git`
-3. Install dependencies: `uv sync`
-4. Create a branch: `git checkout -b feature/your-feature`
-5. Make changes and test
-6. Commit: `git commit -m "Add your feature"`
-7. Push: `git push origin feature/your-feature`
-8. Open a Pull Request
-
-### Development Guidelines
-
-See [CLAUDE.md](CLAUDE.md) for:
-- Code conventions
-- Testing guidelines
-- Development workflows
-- Best practices
-
-### Reporting Issues
-
-Found a bug? Have a feature request?
-
-- **GitHub Issues**: https://github.com/Arseni1919/ragy/issues
-- Include: OS, Python version, error messages, steps to reproduce
+To use Ollama embeddings instead of HuggingFace:
+```bash
+ragy> change_emb
+# Select: ollama
+# Model: nomic-embed-text
+```
 
 ---
 
-## 📄 License
+## CSV Upload Format
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Bring your own data — any time-series corpus works:
+
+```csv
+date,content,title,url
+2024-01-15,Full text of article or document...,Optional title,https://...
+2024-01-16,...
+```
+
+`date` and `content` are required. Any additional columns are stored as metadata and returned in query results.
 
 ---
 
-## 🙏 Acknowledgments
+## Project Structure
 
-- [ChromaDB](https://www.trychroma.com/) - Vector database
-- [Tavily](https://tavily.com/) - Web search API
-- [Sentence Transformers](https://www.sbert.net/) - Embedding models
-- [FastAPI](https://fastapi.tiangolo.com/) - Web framework
-- [Rich](https://rich.readthedocs.io/) - Terminal formatting
+```
+ragy/
+├── ragy_api/          # FastAPI backend (19 endpoints)
+│   ├── services/      # Business logic
+│   └── routers/       # Route handlers
+├── ragy_cli/          # Terminal interface (21 commands)
+├── ragy_mcp/          # MCP server (5 tools)
+├── conn_db/           # ChromaDB connector
+├── conn_emb_hugging_face/
+├── conn_emb_ollama/
+├── conn_tavily/
+├── sample_data/       # Sample datasets to try immediately
+└── pyproject.toml
+```
+
+---
+
+## Contributing
+
+```bash
+git fork https://github.com/Arseni1919/ragy
+git checkout -b feature/your-feature
+uv sync
+# make changes
+git commit -m "feat: your feature"
+git push origin feature/your-feature
+# open PR
+```
+
+See [CLAUDE.md](CLAUDE.md) for code conventions, testing guidelines, and development workflows.
+
+---
+
+## Acknowledgments
+
+- [ChromaDB](https://www.trychroma.com/) — vector database
+- [Tavily](https://tavily.com/) — web search API
+- [Sentence Transformers](https://www.sbert.net/) — embedding models
+- [FastAPI](https://fastapi.tiangolo.com/) — web framework
+- [Rich](https://rich.readthedocs.io/) — terminal formatting
 
 ---
 
 <div align="center">
 
-**Made with ❤️ by Arseniy**
+MIT License · [Issues](https://github.com/Arseni1919/ragy/issues) · [Discussions](https://github.com/Arseni1919/ragy/discussions)
 
-[Documentation](https://github.com/Arseni1919/ragy) • [Issues](https://github.com/Arseni1919/ragy/issues) • [Discussions](https://github.com/Arseni1919/ragy/discussions)
+**Made with ❤️ by Arseniy**
 
 </div>
