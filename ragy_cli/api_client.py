@@ -19,6 +19,14 @@ class APIClient:
         response.raise_for_status()
         return response.json()
 
+    def search_yfinance(self, query: str, max_results: int = 5) -> dict:
+        response = requests.post(
+            f"{self.base_url}{self.api_prefix}/search/yfinance",
+            json={"query": query, "max_results": max_results}
+        )
+        response.raise_for_status()
+        return response.json()
+
     def extract_data(self, query: str, collection: str, top_k: int = 10) -> Generator:
         with requests.post(
             f"{self.base_url}{self.api_prefix}/extract/data",
@@ -113,14 +121,15 @@ class APIClient:
         response.raise_for_status()
         return response.json()
 
-    def create_scheduled_job(self, query: str, collection: str, interval_type: str, interval_amount: int) -> dict:
+    def create_scheduled_job(self, query: str, collection: str, interval_type: str, interval_amount: int, source: str = "tavily") -> dict:
         response = requests.post(
             f"{self.base_url}{self.api_prefix}/system/scheduler/jobs/create",
             json={
                 "query": query,
                 "collection_name": collection,
                 "interval_type": interval_type,
-                "interval_amount": interval_amount
+                "interval_amount": interval_amount,
+                "source": source
             }
         )
         response.raise_for_status()

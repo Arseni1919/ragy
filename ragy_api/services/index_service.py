@@ -5,13 +5,17 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from conn_emb_hugging_face.client import get_document_embedding
 from conn_db.client import client as db_client
-from .search_service import search_with_retry
+from .search_service import search_with_retry, yfinance_search
 
 
-def process_day(query: str, day_date: str, index: int) -> tuple[str, dict, list[float], dict]:
+def process_day(query: str, day_date: str, index: int, source: str = "tavily") -> tuple[str, dict, list[float], dict]:
     query_with_date = f"{query} {day_date}"
 
-    response = search_with_retry(query_with_date)
+    # Choose search function based on source
+    if source == "yfinance":
+        response = yfinance_search(query_with_date, max_results=1)
+    else:  # Default to Tavily
+        response = search_with_retry(query_with_date)
 
     if not response or not response.get('results'):
         return None
@@ -42,7 +46,8 @@ def create_index(
     query: str,
     collection_name: str,
     num_days: int = 365,
-    max_concurrent: int = 10
+    max_concurrent: int = 10,
+    source: str = "tavily"
 ) -> Generator[dict, None, None]:
     try:
         dates = []
@@ -58,7 +63,7 @@ def create_index(
 
         with ThreadPoolExecutor(max_workers=max_concurrent) as executor:
             futures = {
-                executor.submit(process_day, query, day_date, idx): day_date
+                executor.submit(process_day, query, day_date, idx, source): day_date
                 for idx, day_date in enumerate(dates)
             }
 

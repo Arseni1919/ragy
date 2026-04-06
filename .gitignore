@@ -14,3 +14,6 @@ ragy_db
 
 # Sample data - ignore CSV but track Python scripts
 sample_data/*.csv
+
+# Project-specific instructions (local only)
+CLAUDE.md

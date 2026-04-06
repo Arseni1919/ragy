@@ -35,11 +35,13 @@ You define a query (e.g. `"Fed interest rate signals"`) and a time window (e.g. 
 
 ## What You Can Build
 
-**📈 Financial research** — Index a year of market news, query `"Fed pivot signals"`, get back the 10 most semantically similar trading days with similarity scores on a timeline.
+**📈 Financial research** — Index a year of market news with yfinance, query `"Fed pivot signals"`, get back the 10 most semantically similar trading days with similarity scores and related tickers on a timeline. Track multiple stocks with scheduled daily updates — no API costs.
 
 **🔍 Competitive intelligence** — Schedule daily indexing of topics. Ask "what weeks had the most activity around X?" Retrieve content ranked by relevance, not recency.
 
 **🤖 AI agent long-term memory** — Give your Claude / LangGraph / n8n agent a persistent temporal knowledge base via MCP. No search API call on every turn — just semantic retrieval from your local index.
+
+**💹 Stock monitoring dashboard** — Create collections for each stock you track (AAPL, NVDA, TSLA) using yfinance source. Query across time to find similar market conditions, earnings patterns, or news sentiment shifts.
 
 ---
 
@@ -57,6 +59,18 @@ Top K: 10
 ```
 
 Returns a ranked list of dates with similarity scores, plotted on a timeline. This is the fastest way to understand *when* your topic was most relevant.
+
+### Financial Data Search
+
+![Financial Search](docs/screenshots/search-yfin.png)
+
+```bash
+ragy> search_yfin
+Search query: tesla stock
+Max results: 3
+```
+
+Returns financial news articles with related ticker symbols (e.g., TSLA), publisher information, and direct links to Yahoo Finance. Perfect for quick market research or monitoring specific stocks.
 
 ---
 
@@ -96,6 +110,7 @@ Create a `.env` file — only one key is required:
 
 ```bash
 TAVILY_API_KEY="your-key-here"   # Get free at tavily.com
+                                  # Note: yfinance search needs no API key
 ```
 
 Start the stack:
@@ -169,10 +184,55 @@ Plots similarity scores as a timeline. Instantly see if your topic had a spike, 
 ragy> create_job
 Query: tech news
 Collection name: daily_tech
-Interval type: daily
+Data source: tavily        # or 'yfinance' for financial data
+Interval type: day
+Interval amount: 1
 ```
 
-ragy updates your collection every day at the scheduled hour. Your index stays current without manual work.
+**Example with yfinance for financial monitoring:**
+
+```bash
+ragy> create_job
+Query: nvidia stock news
+Collection name: nvidia_tracker
+Data source: yfinance       # financial news + quotes with tickers
+Interval type: day
+Interval amount: 1
+```
+
+ragy updates your collection every day at the scheduled hour. Your index stays current without manual work. Choose `tavily` for general web search or `yfinance` for financial data (stocks, news, quotes) — no API key needed for yfinance.
+
+---
+
+## Data Sources
+
+ragy supports multiple data sources for indexing and search. Choose based on your use case:
+
+### Tavily (General Web Search)
+- **Best for:** News, articles, general web content, research
+- **Requires:** API key (free tier available at [tavily.com](https://tavily.com))
+- **Content:** Web pages, news articles, blog posts
+- **Use when:** Tracking general topics, news, or web content
+
+### yfinance (Financial Data)
+- **Best for:** Stock market news, financial data, company information
+- **Requires:** No API key needed (uses Yahoo Finance)
+- **Content:** Financial news articles with related tickers, stock quotes, company data
+- **Use when:** Monitoring stocks, tracking financial news, building investment research tools
+
+**Example comparison:**
+
+```bash
+# General tech news → use Tavily
+ragy> create_job
+Query: artificial intelligence breakthroughs
+Data source: tavily
+
+# Stock-specific news → use yfinance
+ragy> create_job
+Query: nvidia earnings
+Data source: yfinance    # Returns news + NVDA ticker info
+```
 
 ---
 
@@ -192,6 +252,7 @@ ragy updates your collection every day at the scheduled hour. Your index stays c
 |---------|-------------|
 | `extract` | Retrieve top-K days by semantic similarity |
 | `search` | Live web search via Tavily |
+| `search_yfin` | Search financial data via yfinance (stocks, news, quotes) |
 
 ### Inspect
 | Command | Description |
@@ -229,7 +290,7 @@ ragy updates your collection every day at the scheduled hour. Your index stays c
 | **Index** | `POST /api/v1/index/create` (SSE streaming) |
 | **Extract** | `POST /api/v1/extract/data` · `POST /api/v1/extract/all` |
 | **Database** | `GET /api/v1/database/stats` · `GET /api/v1/database/collection/{name}/distribution` |
-| **Search** | `POST /api/v1/search/web` |
+| **Search** | `POST /api/v1/search/web` (Tavily) · `POST /api/v1/search/yfinance` (financial data) |
 | **Scheduler** | `POST /api/v1/system/scheduler/jobs/create` |
 | **Upload** | `POST /api/v1/upload/csv` |
 
@@ -283,7 +344,7 @@ macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
 ```mermaid
 graph TD
-    D[Search Engine<br/>Tavily / Bright Data] -->|fetch + index| B
+    D[Search Engines<br/>Tavily / yfinance / Bright Data] -->|fetch + index| B
     C[Embeddings<br/>HuggingFace / Ollama] -->|encode| B
     A[ChromaDB<br/>local vector store] <-->|store / retrieve| B[FastAPI Backend]
     B --> E[CLI Client]
@@ -297,19 +358,20 @@ graph TD
 ```
 
 **Data flows:**
-1. **Index**: Tavily → FastAPI → Embeddings → ChromaDB (runs once)
+1. **Index**: Tavily/yfinance → FastAPI → Embeddings → ChromaDB (runs once)
 2. **Query**: CLI / MCP / HTTP → FastAPI → Embeddings → ChromaDB → ranked results
-3. **Schedule**: APScheduler → FastAPI → Tavily → ChromaDB (runs daily)
+3. **Schedule**: APScheduler → FastAPI → Tavily/yfinance → ChromaDB (runs daily)
 
-All processing is local. Only Tavily calls go to the network.
+All processing is local. Only search API calls (Tavily, yfinance) go to the network.
 
 ---
 
 ## Configuration
 
 ```bash
-# Required
-TAVILY_API_KEY="..."           # Only external dependency
+# Required (only for Tavily search)
+TAVILY_API_KEY="..."           # Get free key at tavily.com
+                               # Note: yfinance search works without any API key
 
 # Optional — sensible defaults shown
 HF_EMB_MODEL="all-MiniLM-L6-v2"
@@ -322,6 +384,10 @@ SCHEDULER_HOUR=2               # Daily update hour (UTC)
 SCHEDULER_TIMEZONE="UTC"
 JOBS_DB_PATH="./ragy_jobs.db"
 ```
+
+**Data Source Selection:**
+- Use `tavily` source when creating jobs: requires TAVILY_API_KEY in `.env`
+- Use `yfinance` source for financial data: no API key needed, works out of the box
 
 To use Ollama embeddings instead of HuggingFace:
 ```bash
@@ -385,6 +451,7 @@ See [CLAUDE.md](CLAUDE.md) for code conventions, testing guidelines, and develop
 
 - [ChromaDB](https://www.trychroma.com/) — vector database
 - [Tavily](https://tavily.com/) — web search API
+- [yfinance](https://github.com/ranaroussi/yfinance) — Yahoo Finance data access
 - [Sentence Transformers](https://www.sbert.net/) — embedding models
 - [FastAPI](https://fastapi.tiangolo.com/) — web framework
 - [Rich](https://rich.readthedocs.io/) — terminal formatting

@@ -33,3 +33,58 @@ def web_search(query: str) -> dict:
         })
 
     return {"query": query, "results": formatted_results}
+
+
+def yfinance_search(query: str, max_results: int = 5) -> dict:
+    """Search financial data using yfinance."""
+    import yfinance as yf
+
+    search = yf.Search(query, max_results=max_results)
+
+    formatted_results = []
+
+    # Add news articles
+    for article in search.news:
+        if len(formatted_results) >= max_results:
+            break
+
+        title = article.get('title', 'N/A')
+        link = article.get('link', '')
+        publisher = article.get('publisher', 'Unknown')
+        related_tickers = article.get('relatedTickers', [])
+
+        # Build content string with structured information
+        content = f"Title: {title}\n"
+        content += f"Publisher: {publisher}\n"
+        if related_tickers:
+            content += f"Related Tickers: {', '.join(related_tickers)}\n"
+        content += f"Link: {link}"
+
+        formatted_results.append({
+            "title": title,
+            "url": link,
+            "raw_content": content
+        })
+
+    # Add quote results
+    for quote in search.quotes:
+        if len(formatted_results) >= max_results:
+            break
+
+        symbol = quote.get('symbol', 'N/A')
+        name = quote.get('shortname', quote.get('longname', 'N/A'))
+        quote_type = quote.get('quoteType', 'N/A')
+        exchange = quote.get('exchange', 'N/A')
+
+        content = f"Symbol: {symbol}\n"
+        content += f"Name: {name}\n"
+        content += f"Type: {quote_type}\n"
+        content += f"Exchange: {exchange}"
+
+        formatted_results.append({
+            "title": f"{symbol} - {name}",
+            "url": f"https://finance.yahoo.com/quote/{symbol}",
+            "raw_content": content
+        })
+
+    return {"query": query, "results": formatted_results}

@@ -58,6 +58,51 @@ def handle_search():
         console.print(f"[red]Error: {e}[/red]")
 
 
+def handle_search_yfin():
+    from rich.panel import Panel
+
+    query = console.input("[cyan]Search query:[/cyan] ").strip()
+    if not query:
+        console.print("[red]Query cannot be empty[/red]")
+        return
+
+    max_results_input = console.input("[cyan]Max results (default 5):[/cyan] ").strip()
+    max_results = int(max_results_input) if max_results_input.isdigit() else 5
+
+    try:
+        with console.status(f"[cyan]Searching yfinance for '{query}'...[/cyan]"):
+            result = client.search_yfinance(query, max_results)
+
+        console.print(f"\n[green]✓[/green] Found {len(result['results'])} results for: [cyan]{result['query']}[/cyan]\n")
+
+        if not result.get('results'):
+            console.print("[yellow]No results found[/yellow]")
+            return
+
+        for i, item in enumerate(result['results'], 1):
+            title = item.get('title', 'N/A')
+            url = item.get('url', 'N/A')
+            content = item.get('raw_content', item.get('content', 'N/A'))
+
+            panel_content = f"[bold]{title}[/bold]\n\n"
+            panel_content += f"[dim]{content}[/dim]\n\n"
+            panel_content += f"[blue]🔗 {url}[/blue]"
+
+            panel = Panel(
+                panel_content,
+                title=f"Result {i}",
+                border_style="cyan",
+                padding=(1, 2)
+            )
+            console.print(panel)
+            console.print()
+
+        console.print(f"[dim]Total: {len(result['results'])} results[/dim]")
+
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+
+
 def handle_extract():
     query = console.input("[cyan]Query:[/cyan] ").strip()
     if not query:
@@ -385,11 +430,12 @@ def handle_jobs():
 
         table = Table(title="Scheduled Jobs", title_style="bold cyan")
         table.add_column("ID", style="cyan", width=5, justify="right")
-        table.add_column("Query", style="white", width=25)
-        table.add_column("Collection", style="blue", width=20)
-        table.add_column("Interval", style="green", width=15)
+        table.add_column("Query", style="white", width=22)
+        table.add_column("Collection", style="blue", width=18)
+        table.add_column("Source", style="magenta", width=8)
+        table.add_column("Interval", style="green", width=12)
         table.add_column("Next Run", style="yellow", width=20)
-        table.add_column("Runs", style="dim", width=8, justify="right")
+        table.add_column("Runs", style="dim", width=6, justify="right")
 
         for job in jobs:
             interval_desc = f"{job['interval_amount']} {job['interval_type']}{'s' if job['interval_amount'] > 1 else ''}"
@@ -399,8 +445,9 @@ def handle_jobs():
 
             table.add_row(
                 str(job['job_id']),
-                job['query'][:23] + "..." if len(job['query']) > 25 else job['query'],
-                job['collection_name'][:18] + "..." if len(job['collection_name']) > 20 else job['collection_name'],
+                job['query'][:20] + "..." if len(job['query']) > 22 else job['query'],
+                job['collection_name'][:16] + "..." if len(job['collection_name']) > 18 else job['collection_name'],
+                job.get('source', 'tavily'),
                 interval_desc,
                 next_run,
                 str(job['run_count'])
@@ -496,6 +543,23 @@ def handle_create_job():
     except:
         pass
 
+    sources = ['tavily', 'yfinance']
+    source_completer = WordCompleter(sources, ignore_case=True)
+    source_session = PromptSession(completer=source_completer)
+
+    console.print("\n[cyan]Available data sources: tavily (web search), yfinance (financial data)[/cyan]")
+    console.print("[dim]Tip: Use Tab for autocomplete[/dim]\n")
+
+    while True:
+        try:
+            source = source_session.prompt("Data source: ").strip().lower()
+            if source in sources:
+                break
+            console.print("[red]Invalid source. Choose: tavily or yfinance[/red]")
+        except (KeyboardInterrupt, EOFError):
+            console.print("\n[yellow]Cancelled[/yellow]")
+            return
+
     interval_types = ['minute', 'hour', 'day', 'week', 'month', 'year']
     interval_completer = WordCompleter(interval_types, ignore_case=True)
     interval_session = PromptSession(completer=interval_completer)
@@ -533,6 +597,7 @@ def handle_create_job():
     console.print("\n[bold cyan]Job Summary:[/bold cyan]")
     console.print(f"  Query: [white]{query}[/white]")
     console.print(f"  Collection: [white]{collection}[/white]")
+    console.print(f"  Source: [white]{source}[/white]")
     if interval_type in ['month', 'year']:
         console.print(f"  Schedule: [white]Every {interval_type}[/white]")
     else:
@@ -547,10 +612,11 @@ def handle_create_job():
 
     try:
         with console.status("[cyan]Creating job...[/cyan]"):
-            result = client.create_scheduled_job(query, collection, interval_type, interval_amount)
+            result = client.create_scheduled_job(query, collection, interval_type, interval_amount, source)
 
         console.print(f"[green]✓[/green] {result['message']}")
         console.print(f"[dim]Job ID: {result['job_id']}[/dim]")
+        console.print(f"[dim]Source: {result['source']}[/dim]")
         console.print(f"[dim]Use 'delete_job' to remove this job[/dim]")
 
     except Exception as e:

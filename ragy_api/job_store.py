@@ -28,16 +28,23 @@ class JobMetadataStore:
             )
         ''')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_apscheduler_job_id ON job_metadata(apscheduler_job_id)')
+
+        # Add source column if it doesn't exist (migration)
+        cursor.execute("PRAGMA table_info(job_metadata)")
+        columns = [col[1] for col in cursor.fetchall()]
+        if 'source' not in columns:
+            cursor.execute("ALTER TABLE job_metadata ADD COLUMN source TEXT DEFAULT 'tavily'")
+
         conn.commit()
         conn.close()
 
-    def create_job(self, query: str, collection_name: str, interval_type: str, interval_amount: int) -> int:
+    def create_job(self, query: str, collection_name: str, interval_type: str, interval_amount: int, source: str = "tavily") -> int:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO job_metadata (query, collection_name, interval_type, interval_amount, apscheduler_job_id)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (query, collection_name, interval_type, interval_amount, ''))
+            INSERT INTO job_metadata (query, collection_name, interval_type, interval_amount, source, apscheduler_job_id)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (query, collection_name, interval_type, interval_amount, source, ''))
         job_id = cursor.lastrowid
         apscheduler_job_id = f"user_job_{job_id}"
         cursor.execute('UPDATE job_metadata SET apscheduler_job_id = ? WHERE id = ?', (apscheduler_job_id, job_id))
@@ -67,7 +74,8 @@ class JobMetadataStore:
             'last_success': row[8],
             'run_count': row[9],
             'error_count': row[10],
-            'last_error': row[11]
+            'last_error': row[11],
+            'source': row[12] if len(row) > 12 else 'tavily'
         }
 
     def list_jobs(self) -> list[dict]:
@@ -91,7 +99,8 @@ class JobMetadataStore:
                 'last_success': row[8],
                 'run_count': row[9],
                 'error_count': row[10],
-                'last_error': row[11]
+                'last_error': row[11],
+                'source': row[12] if len(row) > 12 else 'tavily'
             })
         return jobs
 

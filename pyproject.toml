@@ -26,6 +26,7 @@ dependencies = [
     "tqdm>=4.66.0",
     "plotext>=5.2.8",
     "mcp>=0.9.0",
+    "yfinance>=0.2.40",
 ]
 
 [project.scripts]

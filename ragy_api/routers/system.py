@@ -112,7 +112,8 @@ async def create_scheduled_job(request: JobCreateRequest):
         query=request.query,
         collection_name=request.collection_name,
         interval_type=request.interval_type,
-        interval_amount=request.interval_amount
+        interval_amount=request.interval_amount,
+        source=request.source
     )
 
     interval_desc = f"every {request.interval_amount} {request.interval_type}{'s' if request.interval_amount > 1 else ''}"
@@ -139,6 +140,7 @@ async def get_user_jobs():
             collection_name=meta['collection_name'],
             interval_type=meta['interval_type'],
             interval_amount=meta['interval_amount'],
+            source=meta['source'],
             next_run=next_run,
             run_count=meta['run_count'],
             error_count=meta['error_count'],

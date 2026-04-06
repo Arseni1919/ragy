@@ -4,6 +4,7 @@ from typing import Optional
 
 class WebSearchRequest(BaseModel):
     query: str = Field(..., description="Search query")
+    max_results: int = Field(5, description="Maximum number of results")
 
 
 class SearchResult(BaseModel):
@@ -107,6 +108,7 @@ class JobCreateRequest(BaseModel):
     collection_name: str = Field(..., description="Target collection")
     interval_type: str = Field(..., description="minute, hour, day, week, month, year")
     interval_amount: int = Field(..., description="Interval amount (e.g., 5)")
+    source: str = Field(default="tavily", description="Data source: tavily or yfinance")
 
 
 class JobCreateResponse(BaseModel):
@@ -116,6 +118,7 @@ class JobCreateResponse(BaseModel):
     collection_name: str
     interval_type: str
     interval_amount: int
+    source: str
     message: str
 
 
@@ -126,6 +129,7 @@ class UserJobInfo(BaseModel):
     collection_name: str
     interval_type: str
     interval_amount: int
+    source: str
     next_run: Optional[str]
     run_count: int
     error_count: int

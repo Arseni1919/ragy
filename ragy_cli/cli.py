@@ -9,6 +9,7 @@ from ragy_cli.constants import ASCII_LOGO, SUBTITLE
 from ragy_cli.commands import COMMANDS, COMMAND_MAP, COMMAND_GROUPS
 from ragy_cli.handlers import (
     handle_search,
+    handle_search_yfin,
     handle_extract,
     handle_create,
     handle_list,
@@ -170,6 +171,7 @@ def main():
 
     handlers = {
         "search": handle_search,
+        "search_yfin": handle_search_yfin,
         "extract": handle_extract,
         "create_index": handle_create,
         "list": handle_list,
