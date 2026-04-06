@@ -62,8 +62,6 @@ Returns a ranked list of dates with similarity scores, plotted on a timeline. Th
 
 ### Financial Data Search
 
-![Financial Search](docs/screenshots/search-yfin.png)
-
 ```bash
 ragy> search_yfin
 Search query: tesla stock
