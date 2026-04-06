@@ -60,6 +60,22 @@ Returns a ranked list of dates with similarity scores, plotted on a timeline. Th
 
 ---
 
+## Try the Demo
+
+Experience RAGY without installation:
+
+**Live Demo**: *Coming soon on Railway*
+
+Try:
+- Query the `ai_news_demo` collection
+- Extract relevant documents by semantic similarity
+- View database statistics
+- Explore API endpoints
+
+*Note: Demo is read-only. Clone the repo to create your own collections.*
+
+---
+
 ## Quick Start
 
 ### One-command install
@@ -93,6 +109,22 @@ uv run ragy
 ```
 
 **First run note:** embedding models (~80MB) download automatically in the background. First query may take 10–30 seconds; subsequent runs are instant.
+
+### Docker Quick Start
+
+The fastest way to run RAGY:
+
+```bash
+git clone https://github.com/Arseni1919/ragy.git
+cd ragy
+cp .env.example .env
+# Add your Tavily API key to .env
+docker-compose up -d
+```
+
+Access at http://localhost:8000/docs
+
+See [README-DOCKER.md](README-DOCKER.md) for complete Docker documentation.
 
 ---
 

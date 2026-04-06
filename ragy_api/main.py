@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from ragy_api.config import settings
 from ragy_api.scheduler import init_scheduler, shutdown_scheduler
 from ragy_api.routers import search, extract, index, database, system, upload
+from ragy_api.middleware_demo import ReadOnlyMiddleware
 
 
 @asynccontextmanager
@@ -27,6 +28,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(ReadOnlyMiddleware)
 
 app.include_router(search.router, prefix=f"{settings.API_V1_PREFIX}/search", tags=["search"])
 app.include_router(extract.router, prefix=f"{settings.API_V1_PREFIX}/extract", tags=["extract"])

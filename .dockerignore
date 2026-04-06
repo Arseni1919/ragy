@@ -1,0 +1,62 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+wheels/
+
+# Runtime data (will be mounted as volumes)
+ragy_db/
+ragy_jobs.db
+chroma_data/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+
+# Documentation & Screenshots
+docs/
+pics/
+*.md
+!README.md
+
+# Deprecated code
+ragy_manager_old/
+
+# Large sample data
+sample_data/*.csv
+!sample_data/test_upload.csv
+
+# Claude artifacts
+.claude/
+
+# CI/CD
+.github/
+
+# OS files
+.DS_Store
+Thumbs.db
