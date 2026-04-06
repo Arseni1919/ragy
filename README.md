@@ -74,22 +74,6 @@ Returns financial news articles with related ticker symbols (e.g., TSLA), publis
 
 ---
 
-## Try the Demo
-
-Experience RAGY without installation:
-
-**Live Demo**: *Coming soon on Railway*
-
-Try:
-- Query the `ai_news_demo` collection
-- Extract relevant documents by semantic similarity
-- View database statistics
-- Explore API endpoints
-
-*Note: Demo is read-only. Clone the repo to create your own collections.*
-
----
-
 ## Quick Start
 
 ### One-command install
