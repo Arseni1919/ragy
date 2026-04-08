@@ -17,7 +17,8 @@ def create_index_endpoint(request: IndexCreateRequest):
             request.query,
             request.collection_name,
             request.num_days,
-            settings.RAGY_MAX_CONCURRENT
+            settings.RAGY_MAX_CONCURRENT,
+            request.source
         ):
             yield f"data: {json.dumps(update)}\n\n"
 

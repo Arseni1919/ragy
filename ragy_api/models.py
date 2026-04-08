@@ -32,6 +32,7 @@ class IndexCreateRequest(BaseModel):
     query: str = Field(..., description="Search query for index")
     collection_name: str = Field(..., description="Collection name")
     num_days: int = Field(365, description="Number of days to index")
+    source: str = Field(default="bright_data", description="Data source: bright_data, tavily, or yfinance")
 
 
 class IndexStatusResponse(BaseModel):
@@ -108,7 +109,7 @@ class JobCreateRequest(BaseModel):
     collection_name: str = Field(..., description="Target collection")
     interval_type: str = Field(..., description="minute, hour, day, week, month, year")
     interval_amount: int = Field(..., description="Interval amount (e.g., 5)")
-    source: str = Field(default="tavily", description="Data source: tavily or yfinance")
+    source: str = Field(default="bright_data", description="Data source: bright_data, tavily, or yfinance")
 
 
 class JobCreateResponse(BaseModel):

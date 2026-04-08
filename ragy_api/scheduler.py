@@ -39,7 +39,7 @@ async def daily_update_all_collections():
                 continue
 
             existing_docs = collection.count()
-            result = process_day(original_query, yesterday, existing_docs, source="tavily")
+            result = process_day(original_query, yesterday, existing_docs, source="bright_data")
             if result:
                 doc_id, document, embedding, meta = result
                 collection.add(
@@ -78,7 +78,7 @@ async def trigger_manual_update(collection_name: str):
             return
 
         existing_docs = collection.count()
-        result = process_day(original_query, yesterday, existing_docs, source="tavily")
+        result = process_day(original_query, yesterday, existing_docs, source="bright_data")
         if result:
             doc_id, document, embedding, meta = result
             collection.add(
@@ -95,10 +95,10 @@ async def trigger_manual_update(collection_name: str):
         print(f"Error in manual update for {collection_name}: {e}")
 
 
-async def scheduled_job_task(job_id: int, query: str, collection_name: str, source: str = "tavily"):
+async def scheduled_job_task(job_id: int, query: str, collection_name: str, source: str = "bright_data"):
     from datetime import datetime, timezone
     from conn_emb_hugging_face.client import get_document_embedding
-    from ragy_api.services.search_service import search_with_retry, yfinance_search
+    from ragy_api.services.search_service import search_with_retry, yfinance_search, bright_data_search_with_retry_async
 
     print(f"Running job {job_id}: '{query}' → {collection_name} (source: {source})")
 
@@ -110,7 +110,9 @@ async def scheduled_job_task(job_id: int, query: str, collection_name: str, sour
         # Choose search function based on source
         if source == "yfinance":
             response = yfinance_search(query, max_results=1)
-        else:
+        elif source == "bright_data":
+            response = await bright_data_search_with_retry_async(query, max_results=1)
+        else:  # Default to Tavily
             response = search_with_retry(query)
 
         if not response or not response.get('results'):
@@ -154,7 +156,7 @@ async def scheduled_job_task(job_id: int, query: str, collection_name: str, sour
         job_metadata_store.update_run_stats(job_id, success=False, error=str(e))
 
 
-def create_user_job(query: str, collection_name: str, interval_type: str, interval_amount: int, source: str = "tavily") -> dict:
+def create_user_job(query: str, collection_name: str, interval_type: str, interval_amount: int, source: str = "bright_data") -> dict:
     job_id = job_metadata_store.create_job(query, collection_name, interval_type, interval_amount, source)
     apscheduler_job_id = f"user_job_{job_id}"
 

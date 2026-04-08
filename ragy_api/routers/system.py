@@ -108,6 +108,11 @@ async def create_scheduled_job(request: JobCreateRequest):
     if request.interval_amount < 1:
         raise HTTPException(status_code=400, detail="Interval amount must be at least 1")
 
+    from ragy_api.constants import AVAILABLE_SOURCES
+
+    if request.source not in AVAILABLE_SOURCES:
+        raise HTTPException(status_code=400, detail=f"Invalid source. Must be one of: {AVAILABLE_SOURCES}")
+
     result = create_user_job(
         query=request.query,
         collection_name=request.collection_name,

@@ -33,12 +33,12 @@ class JobMetadataStore:
         cursor.execute("PRAGMA table_info(job_metadata)")
         columns = [col[1] for col in cursor.fetchall()]
         if 'source' not in columns:
-            cursor.execute("ALTER TABLE job_metadata ADD COLUMN source TEXT DEFAULT 'tavily'")
+            cursor.execute("ALTER TABLE job_metadata ADD COLUMN source TEXT DEFAULT 'bright_data'")
 
         conn.commit()
         conn.close()
 
-    def create_job(self, query: str, collection_name: str, interval_type: str, interval_amount: int, source: str = "tavily") -> int:
+    def create_job(self, query: str, collection_name: str, interval_type: str, interval_amount: int, source: str = "bright_data") -> int:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute('''
@@ -75,7 +75,7 @@ class JobMetadataStore:
             'run_count': row[9],
             'error_count': row[10],
             'last_error': row[11],
-            'source': row[12] if len(row) > 12 else 'tavily'
+            'source': row[12] if len(row) > 12 else 'bright_data'
         }
 
     def list_jobs(self) -> list[dict]:
@@ -100,7 +100,7 @@ class JobMetadataStore:
                 'run_count': row[9],
                 'error_count': row[10],
                 'last_error': row[11],
-                'source': row[12] if len(row) > 12 else 'tavily'
+                'source': row[12] if len(row) > 12 else 'bright_data'
             })
         return jobs
 
