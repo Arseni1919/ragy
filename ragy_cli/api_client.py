@@ -11,10 +11,10 @@ class APIClient:
         self.base_url = base_url
         self.api_prefix = "/api/v1"
 
-    def search_web(self, query: str) -> dict:
+    def search_web(self, query: str, max_results: int = 5) -> dict:
         response = requests.post(
             f"{self.base_url}{self.api_prefix}/search/web",
-            json={"query": query}
+            json={"query": query, "max_results": max_results}
         )
         response.raise_for_status()
         return response.json()
@@ -22,6 +22,14 @@ class APIClient:
     def search_yfinance(self, query: str, max_results: int = 5) -> dict:
         response = requests.post(
             f"{self.base_url}{self.api_prefix}/search/yfinance",
+            json={"query": query, "max_results": max_results}
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def search_bright_data(self, query: str, max_results: int = 5) -> dict:
+        response = requests.post(
+            f"{self.base_url}{self.api_prefix}/search/bright_data",
             json={"query": query, "max_results": max_results}
         )
         response.raise_for_status()
@@ -40,13 +48,14 @@ class APIClient:
                     yield data
 
     def create_index(self, query: str, collection: str,
-                    num_days: int = 365) -> Generator:
+                    num_days: int = 365, source: str = "bright_data") -> Generator:
         with requests.post(
             f"{self.base_url}{self.api_prefix}/index/create",
             json={
                 "query": query,
                 "collection_name": collection,
-                "num_days": num_days
+                "num_days": num_days,
+                "source": source
             },
             stream=True
         ) as response:
@@ -121,7 +130,7 @@ class APIClient:
         response.raise_for_status()
         return response.json()
 
-    def create_scheduled_job(self, query: str, collection: str, interval_type: str, interval_amount: int, source: str = "tavily") -> dict:
+    def create_scheduled_job(self, query: str, collection: str, interval_type: str, interval_amount: int, source: str = "bright_data") -> dict:
         response = requests.post(
             f"{self.base_url}{self.api_prefix}/system/scheduler/jobs/create",
             json={

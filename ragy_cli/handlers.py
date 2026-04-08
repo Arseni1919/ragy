@@ -29,37 +29,23 @@ def prompt_collection(prompt_text: str, allow_empty: bool = False) -> str:
         return ""
 
 
-def handle_search():
-    query = console.input("[cyan]Search query:[/cyan] ").strip()
-    if not query:
-        console.print("[red]Query cannot be empty[/red]")
-        return
+def handle_search_web():
+    from rich.panel import Panel
+    from ragy_api.constants import AVAILABLE_SOURCES, SOURCE_DESCRIPTIONS
+
+    source_completer = WordCompleter(AVAILABLE_SOURCES, ignore_case=True)
+    session = PromptSession(completer=source_completer)
 
     try:
-        with console.status("[cyan]Searching...[/cyan]"):
-            result = client.search_web(query)
+        source_desc = ", ".join([f"{src} ({SOURCE_DESCRIPTIONS[src]})" for src in AVAILABLE_SOURCES])
+        console.print(f"[dim]Available sources: {source_desc}[/dim]")
+        source = session.prompt("[cyan]Data source:[/cyan] ").strip().lower()
+    except (KeyboardInterrupt, EOFError):
+        return
 
-        if not result.get('results'):
-            console.print("[yellow]No results found[/yellow]")
-            return
-
-        console.print(f"\n[bold cyan]Search Results: {result['query']}[/bold cyan]\n")
-
-        for i, r in enumerate(result['results'][:5], 1):
-            console.print(f"[bold cyan]{r['title']}[/bold cyan]")
-            console.print(f"[blue]{r['url']}[/blue]")
-            console.print(f"{r['raw_content']}")
-
-            if i < len(result['results'][:5]):
-                console.print("\n" + "─" * 100 + "\n")
-
-        console.print()
-    except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
-
-
-def handle_search_yfin():
-    from rich.panel import Panel
+    if source not in AVAILABLE_SOURCES:
+        console.print(f"[red]Invalid source. Must be one of: {', '.join(AVAILABLE_SOURCES)}[/red]")
+        return
 
     query = console.input("[cyan]Search query:[/cyan] ").strip()
     if not query:
@@ -70,8 +56,17 @@ def handle_search_yfin():
     max_results = int(max_results_input) if max_results_input.isdigit() else 5
 
     try:
-        with console.status(f"[cyan]Searching yfinance for '{query}'...[/cyan]"):
-            result = client.search_yfinance(query, max_results)
+        source_label = SOURCE_DESCRIPTIONS.get(source, source)
+        with console.status(f"[cyan]Searching {source_label} for '{query}'...[/cyan]"):
+            if source == "bright_data":
+                result = client.search_bright_data(query, max_results)
+            elif source == "tavily":
+                result = client.search_web(query, max_results)
+            elif source == "yfinance":
+                result = client.search_yfinance(query, max_results)
+            else:
+                console.print(f"[red]Unknown source: {source}[/red]")
+                return
 
         console.print(f"\n[green]✓[/green] Found {len(result['results'])} results for: [cyan]{result['query']}[/cyan]\n")
 
@@ -97,7 +92,7 @@ def handle_search_yfin():
             console.print(panel)
             console.print()
 
-        console.print(f"[dim]Total: {len(result['results'])} results[/dim]")
+        console.print(f"[dim]Total: {len(result['results'])} results via {source_label}[/dim]")
 
     except Exception as e:
         console.print(f"[red]Error: {e}[/red]")
@@ -173,6 +168,24 @@ def handle_create():
     days_input = console.input("[cyan]Number of days (default 365):[/cyan] ").strip()
     num_days = int(days_input) if days_input else 365
 
+    from ragy_api.constants import AVAILABLE_SOURCES, get_sources_prompt
+
+    source_completer = WordCompleter(AVAILABLE_SOURCES, ignore_case=True)
+    source_session = PromptSession(completer=source_completer)
+
+    console.print(f"\n[cyan]{get_sources_prompt()}[/cyan]")
+    console.print("[dim]Tip: Use Tab for autocomplete[/dim]\n")
+
+    while True:
+        try:
+            source = source_session.prompt("Data source: ").strip().lower()
+            if source in AVAILABLE_SOURCES:
+                break
+            console.print(f"[red]Invalid source. Choose: {', '.join(AVAILABLE_SOURCES)}[/red]")
+        except (KeyboardInterrupt, EOFError):
+            console.print("\n[yellow]Cancelled[/yellow]")
+            return
+
     try:
         with Progress(
             SpinnerColumn(),
@@ -184,7 +197,7 @@ def handle_create():
         ) as progress:
             task = progress.add_task(f"Creating index ({num_days} days)...", total=100)
 
-            for update in client.create_index(query, collection, num_days):
+            for update in client.create_index(query, collection, num_days, source):
                 if update['status'] == 'in_progress':
                     progress.update(task, completed=update['progress'], description=update.get('message', 'Creating...'))
                 elif update['status'] == 'success':
@@ -543,19 +556,20 @@ def handle_create_job():
     except:
         pass
 
-    sources = ['tavily', 'yfinance']
-    source_completer = WordCompleter(sources, ignore_case=True)
+    from ragy_api.constants import AVAILABLE_SOURCES, get_sources_prompt
+
+    source_completer = WordCompleter(AVAILABLE_SOURCES, ignore_case=True)
     source_session = PromptSession(completer=source_completer)
 
-    console.print("\n[cyan]Available data sources: tavily (web search), yfinance (financial data)[/cyan]")
+    console.print(f"\n[cyan]{get_sources_prompt()}[/cyan]")
     console.print("[dim]Tip: Use Tab for autocomplete[/dim]\n")
 
     while True:
         try:
             source = source_session.prompt("Data source: ").strip().lower()
-            if source in sources:
+            if source in AVAILABLE_SOURCES:
                 break
-            console.print("[red]Invalid source. Choose: tavily or yfinance[/red]")
+            console.print(f"[red]Invalid source. Choose: {', '.join(AVAILABLE_SOURCES)}[/red]")
         except (KeyboardInterrupt, EOFError):
             console.print("\n[yellow]Cancelled[/yellow]")
             return

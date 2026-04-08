@@ -17,15 +17,15 @@ def search_with_retry(query: str, max_retries: int = MAX_RETRIES) -> dict:
     return None
 
 
-def web_search(query: str) -> dict:
-    response = tavily_client.search(query)
+def web_search(query: str, max_results: int = 5) -> dict:
+    response = tavily_client.search(query, max_results=max_results)
     results = response.get('results', [])
 
     if not results:
         return {"query": query, "results": []}
 
     formatted_results = []
-    for result in results[:5]:
+    for result in results:
         formatted_results.append({
             "title": result.get('title', 'No title'),
             "url": result.get('url', 'N/A'),
@@ -88,3 +88,52 @@ def yfinance_search(query: str, max_results: int = 5) -> dict:
         })
 
     return {"query": query, "results": formatted_results}
+
+
+async def bright_data_search(query: str, max_results: int = 5) -> dict:
+    """Search the web using Bright Data."""
+    from conn_bright_data.client import client as bright_data_client
+
+    response = await bright_data_client.search(query, max_results=max_results)
+    results = response.get('results', [])
+
+    if not results:
+        return {"query": query, "results": []}
+
+    formatted_results = []
+    for result in results[:max_results]:
+        formatted_results.append({
+            "title": result.get('title', 'No title'),
+            "url": result.get('url', 'N/A'),
+            "raw_content": result.get('raw_content', 'No content')
+        })
+
+    return {"query": query, "results": formatted_results}
+
+
+def bright_data_search_with_retry(query: str, max_results: int = 5, max_retries: int = MAX_RETRIES) -> dict:
+    """Search with retry logic for Bright Data (sync wrapper)."""
+    import asyncio
+
+    for attempt in range(max_retries):
+        try:
+            return asyncio.run(bright_data_search(query, max_results))
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise
+            time.sleep(RETRY_DELAYS[attempt])
+    return {"query": query, "results": []}
+
+
+async def bright_data_search_with_retry_async(query: str, max_results: int = 5, max_retries: int = MAX_RETRIES) -> dict:
+    """Search with retry logic for Bright Data (async)."""
+    import asyncio
+
+    for attempt in range(max_retries):
+        try:
+            return await bright_data_search(query, max_results)
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise
+            await asyncio.sleep(RETRY_DELAYS[attempt])
+    return {"query": query, "results": []}

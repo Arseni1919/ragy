@@ -8,8 +8,7 @@ from ragy_api.config import settings
 from ragy_cli.constants import ASCII_LOGO, SUBTITLE
 from ragy_cli.commands import COMMANDS, COMMAND_MAP, COMMAND_GROUPS
 from ragy_cli.handlers import (
-    handle_search,
-    handle_search_yfin,
+    handle_search_web,
     handle_extract,
     handle_create,
     handle_list,
@@ -170,8 +169,7 @@ def main():
     session = PromptSession(completer=completer)
 
     handlers = {
-        "search": handle_search,
-        "search_yfin": handle_search_yfin,
+        "search_web": handle_search_web,
         "extract": handle_extract,
         "create_index": handle_create,
         "list": handle_list,

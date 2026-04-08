@@ -16,8 +16,7 @@ COMMAND_GROUPS = {
     ],
     "Query & Extract": [
         Command("extract", "Extract relevant days", "Usage: extract"),
-        Command("search", "Search the web", "Usage: search"),
-        Command("search_yfin", "Search financial data", "Usage: search_yfin"),
+        Command("search_web", "Search web/financial data", "Usage: search_web"),
     ],
     "Browse": [
         Command("list", "List all collections", "Usage: list"),
