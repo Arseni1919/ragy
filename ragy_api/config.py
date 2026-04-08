@@ -7,7 +7,13 @@ class Settings(BaseSettings):
     HF_TOKEN: str | None = None
     OLLAMA_EMB_MODEL: str = "nomic-embed-text"
     DB_PATH: str = "./ragy_db"
+    DB_PROVIDER: str = "zvec"  # Options: "chromadb", "zvec"
     RAGY_MAX_CONCURRENT: int = 3
+
+    BRIGHT_DATA_API_KEY: str | None = None
+    BRIGHT_DATA_ZONE: str | None = None
+    BRIGHTDATA_BROWSERAPI_USERNAME: str | None = None
+    BRIGHTDATA_BROWSERAPI_PASSWORD: str | None = None
 
     GEMINI_API_KEY: str | None = None
     LLM_MODEL: str = "gemini/gemini-2.5-flash-lite"

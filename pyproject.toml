@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12.0"
 dependencies = [
     "chromadb>=1.5.5",
+    "zvec>=0.1.0",
     "tavily-python>=0.5.0",
     "python-dotenv>=1.0.0",
     "ollama>=0.1.0",
@@ -27,6 +28,9 @@ dependencies = [
     "plotext>=5.2.8",
     "mcp>=0.9.0",
     "yfinance>=0.2.40",
+    "brightdata>=0.4.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=5.0.0",
 ]
 
 [project.scripts]
