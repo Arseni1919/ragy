@@ -35,9 +35,11 @@ You define a query (e.g. `"Fed interest rate signals"`) and a time window (e.g. 
 
 ## What You Can Build
 
+**🌐 Enterprise data collection** — Use Bright Data for large-scale web scraping, structured data extraction, and professional-grade data collection. Index competitive intelligence, market research, or any web data with advanced scraping capabilities.
+
 **📈 Financial research** — Index a year of market news with yfinance, query `"Fed pivot signals"`, get back the 10 most semantically similar trading days with similarity scores and related tickers on a timeline. Track multiple stocks with scheduled daily updates — no API costs.
 
-**🔍 Competitive intelligence** — Schedule daily indexing of topics. Ask "what weeks had the most activity around X?" Retrieve content ranked by relevance, not recency.
+**🔍 Competitive intelligence** — Schedule daily indexing of topics with Bright Data or Tavily. Ask "what weeks had the most activity around X?" Retrieve content ranked by relevance, not recency.
 
 **🤖 AI agent long-term memory** — Give your Claude / LangGraph / n8n agent a persistent temporal knowledge base via MCP. No search API call on every turn — just semantic retrieval from your local index.
 
@@ -88,11 +90,17 @@ cd ragy
 uv sync
 ```
 
-Create a `.env` file — only one key is required:
+Create a `.env` file — API keys optional depending on data source:
 
 ```bash
+# For Bright Data (advanced scraping)
+BRIGHT_DATA_API_KEY="your-key-here"
+BRIGHT_DATA_ZONE="your-zone"
+
+# For Tavily (general web search)
 TAVILY_API_KEY="your-key-here"   # Get free at tavily.com
-                                  # Note: yfinance search needs no API key
+
+# Note: yfinance (financial data) needs no API key
 ```
 
 Start the stack:
@@ -166,7 +174,7 @@ Plots similarity scores as a timeline. Instantly see if your topic had a spike, 
 ragy> create_job
 Query: tech news
 Collection name: daily_tech
-Data source: tavily        # or 'yfinance' for financial data
+Data source: bright_data   # or 'tavily' or 'yfinance'
 Interval type: day
 Interval amount: 1
 ```
@@ -182,13 +190,19 @@ Interval type: day
 Interval amount: 1
 ```
 
-ragy updates your collection every day at the scheduled hour. Your index stays current without manual work. Choose `tavily` for general web search or `yfinance` for financial data (stocks, news, quotes) — no API key needed for yfinance.
+ragy updates your collection every day at the scheduled hour. Your index stays current without manual work. Choose `bright_data` for advanced scraping, `tavily` for general web search, or `yfinance` for financial data (stocks, news, quotes) — no API key needed for yfinance.
 
 ---
 
 ## Data Sources
 
 ragy supports multiple data sources for indexing and search. Choose based on your use case:
+
+### Bright Data (Advanced Web Scraping)
+- **Best for:** Structured data extraction, large-scale web scraping, alternative search
+- **Requires:** API key and zone credentials
+- **Content:** Web pages, structured data, search results
+- **Use when:** Need more control over scraping, bypassing restrictions, or professional-grade data collection
 
 ### Tavily (General Web Search)
 - **Best for:** News, articles, general web content, research
@@ -205,6 +219,11 @@ ragy supports multiple data sources for indexing and search. Choose based on you
 **Example comparison:**
 
 ```bash
+# Advanced scraping → use Bright Data
+ragy> create_job
+Query: competitor analysis
+Data source: bright_data  # Advanced web scraping capabilities
+
 # General tech news → use Tavily
 ragy> create_job
 Query: artificial intelligence breakthroughs
@@ -326,9 +345,9 @@ macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
 ```mermaid
 graph TD
-    D[Search Engines<br/>Tavily / yfinance / Bright Data] -->|fetch + index| B
+    D[Search Engines<br/>Bright Data / Tavily / yfinance] -->|fetch + index| B
     C[Embeddings<br/>HuggingFace / Ollama] -->|encode| B
-    A[ChromaDB<br/>local vector store] <-->|store / retrieve| B[FastAPI Backend]
+    A[zvec<br/>local vector store] <-->|store / retrieve| B[FastAPI Backend]
     B --> E[CLI Client]
     B --> F[MCP Server]
     B --> G[HTTP / REST]
@@ -340,11 +359,11 @@ graph TD
 ```
 
 **Data flows:**
-1. **Index**: Tavily/yfinance → FastAPI → Embeddings → ChromaDB (runs once)
-2. **Query**: CLI / MCP / HTTP → FastAPI → Embeddings → ChromaDB → ranked results
-3. **Schedule**: APScheduler → FastAPI → Tavily/yfinance → ChromaDB (runs daily)
+1. **Index**: Bright Data/Tavily/yfinance → FastAPI → Embeddings → zvec (runs once)
+2. **Query**: CLI / MCP / HTTP → FastAPI → Embeddings → zvec → ranked results
+3. **Schedule**: APScheduler → FastAPI → Bright Data/Tavily/yfinance → zvec (runs daily)
 
-All processing is local. Only search API calls (Tavily, yfinance) go to the network.
+All processing is local. Only search API calls (Bright Data, Tavily, yfinance) go to the network.
 
 ---
 
@@ -356,8 +375,9 @@ TAVILY_API_KEY="..."           # Get free key at tavily.com
                                # Note: yfinance search works without any API key
 
 # Optional — sensible defaults shown
-HF_EMB_MODEL="all-MiniLM-L6-v2"
+HF_EMB_MODEL="google/embeddinggemma-300m"
 DB_PATH="./ragy_db"
+DB_PROVIDER="zvec"             # Vector database: "zvec" (default) or "chromadb"
 RAGY_MAX_CONCURRENT=10
 API_HOST="0.0.0.0"
 API_PORT=8000
@@ -365,11 +385,20 @@ SCHEDULER_ENABLED=true
 SCHEDULER_HOUR=2               # Daily update hour (UTC)
 SCHEDULER_TIMEZONE="UTC"
 JOBS_DB_PATH="./ragy_jobs.db"
+
+# Optional — for Bright Data integration
+BRIGHT_DATA_API_KEY="..."
+BRIGHT_DATA_ZONE="..."
 ```
 
 **Data Source Selection:**
+- Use `bright_data` source for advanced scraping: requires BRIGHT_DATA_API_KEY and BRIGHT_DATA_ZONE in `.env`
 - Use `tavily` source when creating jobs: requires TAVILY_API_KEY in `.env`
 - Use `yfinance` source for financial data: no API key needed, works out of the box
+
+**Vector Database:**
+- **zvec** (default): High-performance C++ vector database from Alibaba, optimized for speed and memory
+- **chromadb**: Python-based alternative, can be switched via `DB_PROVIDER="chromadb"` in `.env`
 
 To use Ollama embeddings instead of HuggingFace:
 ```bash
@@ -403,10 +432,12 @@ ragy/
 │   └── routers/       # Route handlers
 ├── ragy_cli/          # Terminal interface (21 commands)
 ├── ragy_mcp/          # MCP server (5 tools)
-├── conn_db/           # ChromaDB connector
+├── conn_db/           # Database factory (zvec/chromadb)
+├── conn_zvec/         # zvec connector (default)
 ├── conn_emb_hugging_face/
 ├── conn_emb_ollama/
-├── conn_tavily/
+├── conn_tavily/       # Tavily search API
+├── conn_bright_data/  # Bright Data scraping API
 ├── sample_data/       # Sample datasets to try immediately
 └── pyproject.toml
 ```
@@ -431,7 +462,8 @@ See [CLAUDE.md](CLAUDE.md) for code conventions, testing guidelines, and develop
 
 ## Acknowledgments
 
-- [ChromaDB](https://www.trychroma.com/) — vector database
+- [zvec](https://github.com/alibaba/zvec) — high-performance C++ vector database
+- [Bright Data](https://brightdata.com/) — web scraping and data collection
 - [Tavily](https://tavily.com/) — web search API
 - [yfinance](https://github.com/ranaroussi/yfinance) — Yahoo Finance data access
 - [Sentence Transformers](https://www.sbert.net/) — embedding models
